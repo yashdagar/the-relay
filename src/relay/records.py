@@ -32,6 +32,7 @@ def result_row(
         "retrieval_setting": retrieval_setting,
         "answer_grade": answer_grade,
         "queue_depth": reply.queue_depth,
+        "reason": reply.reason or "",
     }
     return {column: row[column] for column in RESULT_COLUMNS}
 

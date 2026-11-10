@@ -19,6 +19,7 @@ def row(i, scenario="burst", source="stand-in", **overrides):
         "retrieval_setting": "300w-k5-hybrid",
         "answer_grade": "correct",
         "queue_depth": i,
+        "reason": "",
     }
     return {**base, **overrides}
 

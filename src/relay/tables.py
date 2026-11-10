@@ -17,6 +17,7 @@ RESULT_COLUMNS = [
     "retrieval_setting",
     "answer_grade",
     "queue_depth",
+    "reason",
 ]
 
 SCENARIO_KEY = ["scenario", "source"]
