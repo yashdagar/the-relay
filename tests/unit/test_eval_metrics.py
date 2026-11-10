@@ -171,3 +171,10 @@ def test_a_year_not_in_the_cited_passage_is_not_grounded():
 
 def test_digits_trailing_a_name_are_not_counted_as_claims():
     assert is_grounded(answer("warmup_steps was 4000 in layer L12."))
+
+
+def test_number_words_match_digit_facts():
+    passage = Chunk(id="p:1", paper="1706.03762v7", section="S", page=1, text="h = 8 heads")
+    question = {**QUESTION, "must_include": ["\\b8\\b"]}
+    reply = answer("It uses eight heads.", citations=(passage,), retrieved=(passage,))
+    assert grade(question, reply) == "correct"

@@ -11,6 +11,13 @@ Grade = str
 
 CITATION_MARKER = re.compile(r"[\[【][^\]】]*[\]】]")
 CHUNK_ID = re.compile(r"\d{4}\.\d{5}v\d+:\d+:\d+")
+NUMBER_WORDS = {
+    word: str(value)
+    for value, word in enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve".split()
+    )
+}
+NUMBER_WORD = re.compile(rf"\b({'|'.join(NUMBER_WORDS)})\b", re.I)
 DASHES = dict.fromkeys(map(ord, "\u2010\u2011\u2012\u2013\u2014\u2212"), "-")
 NUMBER = re.compile(r"(?<![A-Za-z0-9_{^.])(?<![A-Za-z]-)\d+(?:[.,]\d+)*")
 THIN_THOUSANDS = re.compile(r"(?<=\d) (?=\d{3}\b)")
@@ -84,6 +91,7 @@ def grade(question: dict, reply: Reply) -> Grade:
     if not answer_expected:
         return "wrong"
     body = answer_body(reply.text)
+    body = f"{body} {NUMBER_WORD.sub(lambda m: NUMBER_WORDS[m.group(1).lower()], body)}"
     has_facts = all(re.search(p, body, re.IGNORECASE) for p in question["must_include"])
     has_forbidden = any(re.search(p, body, re.IGNORECASE) for p in question["must_not_include"])
     return "correct" if has_facts and not has_forbidden and is_grounded(reply) else "wrong"
