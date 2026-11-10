@@ -17,6 +17,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 from starlette.routing import Route
 
+from relay.oracle import oracle
+
 CALIBRATION_RUN = "results/20261111-0150-probe-latency"
 
 
@@ -41,7 +43,7 @@ BOGUS_ID = "9999.99999v9:300:999"
 
 @dataclass(frozen=True)
 class StandInConfig:
-    content: Literal["grounded", "uncited", "bogus_citation", "truncated"] = "grounded"
+    content: Literal["grounded", "oracle", "uncited", "bogus_citation", "truncated"] = "grounded"
     rpm: int | None = 30
     tpm: int | None = 8000
     rpd: int | None = 1000
@@ -158,8 +160,12 @@ class StandIn:
         return JSONResponse({"data": [{"id": m} for m in PROFILES]})
 
     def _content(self, step: str, messages: list[dict]) -> str:
-        prompt = "\n".join(m["content"] for m in messages)
+        prompt = "\n".join(m["content"] for m in messages if m["role"] == "user")
         question = (QUESTION.search(prompt) or [None, ""])[1]
+        if self.config.content == "oracle":
+            scripted = oracle(step, question, PASSAGE.findall(prompt))
+            if scripted is not None:
+                return scripted
         if step == "understand":
             return json.dumps(
                 {"in_scope": True, "query": question, "papers": [], "sub_questions": []}
