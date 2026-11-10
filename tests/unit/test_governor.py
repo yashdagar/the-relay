@@ -108,3 +108,17 @@ def test_reset_header_durations_are_parsed():
     assert parse_duration_s("1m26.4s") == pytest.approx(86.4)
     assert parse_duration_s("622ms") == pytest.approx(0.622)
     assert parse_duration_s("28m48s") == pytest.approx(1728)
+
+
+def test_spending_the_local_daily_budget_marks_the_model_exhausted(clock):
+    gov = governor(clock, requests_per_day=2)
+    gov.reserve(MODEL, tokens=10)
+    gov.reserve(MODEL, tokens=10)
+    assert gov.daily_exhausted(MODEL)
+
+
+def test_exhaustion_from_local_budget_reports_when_one_request_returns(clock):
+    gov = governor(clock, requests_per_day=1000)
+    for _ in range(1000):
+        gov.reserve(MODEL, tokens=1)
+    assert gov.exhausted_for_s(MODEL) == pytest.approx(86.4)

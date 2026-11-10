@@ -96,10 +96,15 @@ class Governor:
             self.buckets[model][name].level -= amount
 
     def daily_exhausted(self, model: str) -> bool:
-        return self.exhausted_until.get(model, -math.inf) > self.clock()
+        return self.exhausted_for_s(model) > 0
 
     def exhausted_for_s(self, model: str) -> float:
-        return max(0.0, self.exhausted_until.get(model, 0.0) - self.clock())
+        now = self.clock()
+        stated = self.exhausted_until.get(model, now) - now
+        if model not in self.buckets:
+            return max(0.0, stated)
+        local = self.buckets[model]["rpd"].wait_s(1, now)
+        return max(0.0, stated, local)
 
     def observe(self, model: str, headers: dict[str, str]) -> None:
         if model not in self.buckets:
