@@ -40,7 +40,9 @@ def test_questions_expecting_an_answer_have_evidence_and_facts():
 def test_every_evidence_phrase_fits_inside_one_piece_of_its_paper(size):
     chunks = load_chunks(size)
     for q in QUESTIONS:
-        for phrase in q["evidence"]:
+        for phrase in (
+            p for item in q["evidence"] for p in ([item] if isinstance(item, str) else item)
+        ):
             assert any(
                 contains_evidence(c.text, [phrase]) for c in chunks if c.paper in q["papers"]
             ), (q["id"], phrase)
