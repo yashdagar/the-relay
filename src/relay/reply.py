@@ -24,6 +24,7 @@ class Reply:
     tokens_in: int = 0
     tokens_out: int = 0
     queue_depth: int = 0
+    steps: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)

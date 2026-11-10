@@ -76,3 +76,19 @@ async def test_exhausted_daily_budget_reply_says_when_service_returns(standin_pi
 async def test_exhausted_daily_budget_reply_is_never_an_unchecked_answer(standin_pipeline):
     reply = await standin_pipeline(content="grounded", rpd=0).answer(QUESTION)
     assert reply.kind in {"degraded", "refusal"}
+
+
+async def test_reply_traces_every_model_call_in_order(standin_pipeline):
+    reply = await standin_pipeline(content="grounded").answer(QUESTION)
+    assert [s["step"] for s in reply.steps] == ["understand", "draft", "check"]
+
+
+async def test_traced_calls_account_for_the_request_time(standin_pipeline):
+    reply = await standin_pipeline(content="grounded").answer(QUESTION)
+    traced = sum(s["queued_ms"] + s["duration_ms"] for s in reply.steps)
+    assert traced <= reply.total_ms and traced >= 0.8 * reply.total_ms
+
+
+async def test_trace_marks_failed_attempts_as_retries(standin_pipeline):
+    reply = await standin_pipeline(content="grounded", fail_rate=1.0).answer(QUESTION)
+    assert [s["outcome"] for s in reply.steps if s["attempt"] > 0] == ["error"] * reply.retries

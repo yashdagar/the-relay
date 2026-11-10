@@ -107,6 +107,7 @@ class _Request:
         self.tokens_in = 0
         self.tokens_out = 0
         self.failure: str | None = None
+        self.steps: list[dict] = []
 
     def elapsed_ms(self) -> float:
         return (time.monotonic() - self.start) * 1000
@@ -127,6 +128,7 @@ class _Request:
             tokens_in=self.tokens_in,
             tokens_out=self.tokens_out,
             queue_depth=self.queue_depth,
+            steps=self.steps,
             **fields,
         )
 
@@ -281,7 +283,11 @@ class _Request:
         config = self.config
         tokens = _estimate_tokens(messages, max_tokens)
         self.model_calls += 1
-        while True:
+        backoff_s = 0.0
+        for attempt in range(config.max_retries + 1):
+            wait_start = time.monotonic()
+            if backoff_s:
+                await asyncio.sleep(min(backoff_s, max(0.0, self.remaining_s())))
             if self.remaining_s() <= 0:
                 self.failure = "timeout"
                 return None
@@ -289,6 +295,7 @@ class _Request:
                 exhausted = self.governor.daily_exhausted(model)
                 self.failure = "exhausted" if exhausted else "rate_limited"
                 return None
+            queued_ms = (time.monotonic() - wait_start) * 1000
             result = await self.pipeline.client.chat(
                 model,
                 messages,
@@ -297,6 +304,7 @@ class _Request:
                 step=step,
                 extra=config.extra(model),
             )
+            self.trace(step, model, attempt, queued_ms, result)
             self.governor.observe(model, result.headers)
             self.tokens_in += result.tokens_in
             self.tokens_out += result.tokens_out
@@ -317,6 +325,26 @@ class _Request:
             if result.outcome == "timeout" and self.remaining_s() < timeout_ms / 1000:
                 return None
             self.retries += 1
+            backoff_s = 0.0
             if result.outcome == "error":
-                backoff_s = config.backoff_base_ms / 1000 * 2 ** (self.retries - 1)
-                await asyncio.sleep(min(backoff_s * random.uniform(0.5, 1.5), self.remaining_s()))
+                base_s = config.backoff_base_ms / 1000 * 2 ** (self.retries - 1)
+                backoff_s = base_s * random.uniform(0.5, 1.5)
+        return None
+
+    def trace(self, step: str, model: str, attempt: int, queued_ms: float, result) -> None:
+        self.steps.append(
+            {
+                "step": step,
+                "model": model,
+                "attempt": attempt,
+                "started_ms": round(self.elapsed_ms() - result.total_ms, 1),
+                "queued_ms": round(queued_ms, 1),
+                "first_token_ms": result.first_token_ms and round(result.first_token_ms, 1),
+                "duration_ms": round(result.total_ms, 1),
+                "outcome": result.outcome,
+                "status_code": result.status_code,
+                "tokens_in": result.tokens_in,
+                "tokens_out": result.tokens_out,
+                "text": (result.text or result.error or "")[:600],
+            }
+        )
