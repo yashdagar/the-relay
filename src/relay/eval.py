@@ -4,8 +4,8 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from relay.pipeline import Reply
 from relay.questions import expects_answer
+from relay.reply import Reply
 
 Grade = str
 

@@ -57,6 +57,10 @@ class Config:
     draft_max_tokens: int = 400
     check_max_tokens: int = 200
     max_retries: int = 2
+    draft_reserve_ms: int = 1_700
+    check_reserve_ms: int = 1_400
+    governor_minute_s: float = 60.0
+    governor_day_s: float = 86_400.0
     backoff_base_ms: int = 250
     max_drafts: int = 2
     max_model_calls: int = 5

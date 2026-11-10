@@ -34,7 +34,7 @@ PROFILES = {
 }
 DEFAULT_PROFILE = PROFILES["openai/gpt-oss-120b"]
 
-PASSAGE = re.compile(r'<passage id="([^"]+)">\s*(.*?)\s*</passage>', re.S)
+PASSAGE = re.compile(r'<passage id="([^"]+)"[^>]*>\s*(.*?)\s*</passage>', re.S)
 QUESTION = re.compile(r"<question>\s*(.*?)\s*</question>", re.S)
 BOGUS_ID = "9999.99999v9:300:999"
 

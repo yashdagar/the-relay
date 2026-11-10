@@ -1,3 +1,5 @@
+import asyncio
+
 import thresholds
 
 QUESTION = "What value of warmup_steps was used in the Transformer's learning rate schedule?"
@@ -36,10 +38,10 @@ async def test_model_calls_per_request_are_bounded(standin_pipeline):
 
 
 async def test_rate_limited_request_is_retried_and_succeeds(standin_pipeline):
-    pipeline = standin_pipeline(content="grounded", rpm=3, minute_s=2.0)
-    await pipeline.answer(QUESTION)
-    reply = await pipeline.answer(QUESTION)
-    assert reply.status == "ok" and reply.retries >= 1
+    pipeline = standin_pipeline(content="grounded", rpm=1, minute_s=2.0)
+    replies = await asyncio.gather(pipeline.answer(QUESTION), pipeline.answer(QUESTION))
+    assert all(r.status == "ok" for r in replies)
+    assert max(r.retries for r in replies) >= 1
 
 
 async def test_failing_provider_gives_up_after_the_retry_limit(standin_pipeline):
