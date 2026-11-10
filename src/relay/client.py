@@ -1,11 +1,13 @@
 import asyncio
 import json
+import re
 import time
 from dataclasses import asdict, dataclass, field
 from typing import Literal
 
 import httpx
 
+ORG_ID = re.compile(r"org_[A-Za-z0-9]+")
 Outcome = Literal["ok", "rate_limited", "timeout", "error"]
 LIMIT_HEADERS = (
     "retry-after",
@@ -94,7 +96,8 @@ class ModelClient:
                 h: response.headers[h] for h in LIMIT_HEADERS if h in response.headers
             }
             if response.status_code != 200:
-                result.error = (await response.aread()).decode(errors="replace")[:2000]
+                body = (await response.aread()).decode(errors="replace")[:2000]
+                result.error = ORG_ID.sub("org_REDACTED", body)
                 result.outcome = "rate_limited" if response.status_code == 429 else "error"
                 return
             async for line in response.aiter_lines():
