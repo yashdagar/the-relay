@@ -16,25 +16,31 @@ def normalize(text: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", text))
 
 
-def contains_evidence(text: str, evidence: Sequence[str]) -> bool:
+Evidence = Sequence[str | Sequence[str]]
+
+
+def _alternatives(item: str | Sequence[str]) -> list[str]:
+    return [item] if isinstance(item, str) else list(item)
+
+
+def contains_evidence(text: str, evidence: Evidence) -> bool:
     haystack = f" {normalize(text)} "
-    return any(f" {normalize(phrase)} " in haystack for phrase in evidence)
+    phrases = [p for item in evidence for p in _alternatives(item)]
+    return any(f" {normalize(phrase)} " in haystack for phrase in phrases)
 
 
-def precision_at_k(ranked: Sequence[str], evidence: Sequence[str], k: int) -> float:
+def precision_at_k(ranked: Sequence[str], evidence: Evidence, k: int) -> float:
     return sum(contains_evidence(text, evidence) for text in ranked[:k]) / k
 
 
-def recall_at_k(ranked: Sequence[str], evidence: Sequence[str], k: int) -> float:
+def recall_at_k(ranked: Sequence[str], evidence: Evidence, k: int) -> float:
     if not evidence:
         raise ValueError("recall is undefined without evidence")
-    found = sum(
-        any(contains_evidence(text, [phrase]) for text in ranked[:k]) for phrase in evidence
-    )
+    found = sum(any(contains_evidence(text, [item]) for text in ranked[:k]) for item in evidence)
     return found / len(evidence)
 
 
-def reciprocal_rank(ranked: Sequence[str], evidence: Sequence[str]) -> float:
+def reciprocal_rank(ranked: Sequence[str], evidence: Evidence) -> float:
     for rank, text in enumerate(ranked, start=1):
         if contains_evidence(text, evidence):
             return 1 / rank
@@ -67,10 +73,10 @@ def _expects_answer(question: dict) -> bool:
 
 
 def grade(question: dict, reply: Reply) -> Grade:
-    expects_answer = _expects_answer(question)
+    answer_expected = _expects_answer(question)
     if reply.kind in ("refusal", "degraded"):
-        return "refused_wrongly" if expects_answer else "refused_correctly"
-    if not expects_answer:
+        return "refused_wrongly" if answer_expected else "refused_correctly"
+    if not answer_expected:
         return "wrong"
     has_facts = all(re.search(p, reply.text, re.IGNORECASE) for p in question["must_include"])
     has_forbidden = any(

@@ -59,6 +59,16 @@ def test_recall_is_the_share_of_evidence_phrases_found_in_top_k():
     assert recall_at_k([RELEVANT, IRRELEVANT], evidence, k=2) == 0.5
 
 
+def test_any_alternative_phrase_satisfies_an_evidence_item():
+    evidence = [["warmup_steps = 4000", "a 4000 step warmup"]]
+    assert recall_at_k(["followed by a 4000 step warmup"], evidence, k=1) == 1.0
+
+
+def test_alternatives_count_as_one_evidence_item():
+    evidence = [["warmup_steps = 4000", "a 4000 step warmup"], "label smoothing of value"]
+    assert recall_at_k([RELEVANT], evidence, k=1) == 0.5
+
+
 def test_reciprocal_rank_uses_the_first_relevant_piece():
     assert reciprocal_rank([IRRELEVANT, IRRELEVANT, RELEVANT], EVIDENCE) == pytest.approx(1 / 3)
 
