@@ -75,7 +75,8 @@ def main() -> None:
     parser.add_argument("--reps", type=int, default=5)
     args = parser.parse_args()
 
-    out = ROOT / "results" / f"{datetime.now():%Y%m%d-%H%M}-retrieval-offline"
+    started = datetime.now()
+    out = ROOT / "results" / f"{started:%Y%m%d-%H%M}-retrieval-offline"
     out.mkdir(parents=True)
     quality, latency = run(args.reps)
     quality.to_csv(out / "quality.csv", index=False)
@@ -83,7 +84,7 @@ def main() -> None:
     summarize(quality, latency).to_csv(out / "summary.csv")
     run_info = {
         "commit": _commit(),
-        "started": datetime.now().isoformat(timespec="seconds"),
+        "started": started.isoformat(timespec="seconds"),
         "reps": args.reps,
         "default_setting": DEFAULT_SETTING.name,
         "settings": {n: vars(s) for n, s in SETTINGS.items()},
