@@ -8,22 +8,19 @@ from functools import cache
 
 from relay.client import CallResult, ModelClient
 from relay.config import Config
-from relay.eval import CHUNK_ID, is_grounded
+from relay.eval import CHUNK_ID, answer_body, is_grounded, numbers
 from relay.governor import DAILY, Governor, parse_rate_limit
 from relay.library import Chunk
 from relay.prompts import check_messages, draft_messages, understand_messages
 from relay.reply import Reply
-from relay.retrieval import RetrievalSetting, Retriever
+from relay.retrieval import RetrievalSetting, Retriever, interleave
 
 __all__ = ["Pipeline", "Reply"]
 
 JSON_OBJECT = re.compile(r"\{.*\}", re.S)
 CITED_ID = re.compile(rf"[\[【]?\s*({CHUNK_ID.pattern})\s*[\]】]?")
 NOT_IN_PAPERS = "NOT_IN_PAPERS"
-GROUNDING_FEEDBACK = (
-    "it cited no passage, cited a passage that was not provided, or stated a number "
-    "that its cited passages do not contain."
-)
+TRUNCATED_FEEDBACK = "it was cut off by the length limit. Answer in at most three short sentences."
 FAILURE_STATUS = {
     "exhausted": "rate_limited",
     "rate_limited": "rate_limited",
@@ -60,6 +57,20 @@ def _parse_json(text: str) -> dict:
 
 def _estimate_tokens(messages: list[dict], max_tokens: int) -> int:
     return sum(len(m["content"]) for m in messages) // 4 + max_tokens
+
+
+def grounding_feedback(candidate: Reply, cited_ids: set[str]) -> str:
+    if not cited_ids:
+        return "it cited no passage. End every factual sentence with a passage id."
+    unknown = sorted(cited_ids - {c.id for c in candidate.retrieved})
+    if unknown:
+        return f"it cited passages that were not provided: {', '.join(unknown)}."
+    supported = set().union(*(numbers(c.text) for c in candidate.citations))
+    missing = sorted(numbers(answer_body(candidate.text)) - supported)
+    return (
+        f"it stated {', '.join(missing)}, which its cited passages do not contain. Remove "
+        "numbers you computed or recalled, and state only numbers written in the passages."
+    )
 
 
 def _display(text: str, chunks: list[Chunk]) -> str:
@@ -163,12 +174,9 @@ class _Request:
     def retrieve(self, sub_questions: list[str]) -> tuple[list[Chunk], float]:
         retriever = self.pipeline.retriever
         hits = retriever.search(self.question)
-        chunks = [h.chunk for h in hits]
-        for sub in sub_questions:
-            extra = [h.chunk for h in retriever.search(sub) if h.chunk not in chunks]
-            chunks.extend(extra[:2])
+        extra = [[h.chunk for h in retriever.search(sub)][:2] for sub in sub_questions]
         top_score = hits[0].score if hits else 0.0
-        return chunks, top_score
+        return interleave([h.chunk for h in hits], *extra), top_score
 
     def choose_draft(self, chunks: list[Chunk]) -> tuple[str, list[Chunk]] | None:
         config = self.config
@@ -209,11 +217,14 @@ class _Request:
             text = draft.text.strip()
             if text.startswith(NOT_IN_PAPERS):
                 return self.refusal("not_in_papers", passages)
+            if draft.finish_reason == "length":
+                feedback = TRUNCATED_FEEDBACK
+                continue
             cited_ids = set(CHUNK_ID.findall(text))
             cited = [c for c in passages if c.id in cited_ids]
             candidate = Reply(kind="answer", text=text, citations=cited, retrieved=passages)
             if not is_grounded(candidate) or len(cited) < len(cited_ids):
-                feedback = GROUNDING_FEEDBACK
+                feedback = grounding_feedback(candidate, cited_ids)
                 continue
             check = await self.call(
                 "check",

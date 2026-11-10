@@ -113,6 +113,15 @@ class Retriever:
         return candidates[np.argsort(-scores[candidates], kind="stable")], scores
 
 
+def interleave(*ranked: list) -> list:
+    merged = []
+    for rank in range(max(map(len, ranked), default=0)):
+        for items in ranked:
+            if rank < len(items) and items[rank] not in merged:
+                merged.append(items[rank])
+    return merged
+
+
 SETTINGS = {
     s.name: s
     for s in (

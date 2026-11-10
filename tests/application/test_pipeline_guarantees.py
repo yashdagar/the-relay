@@ -92,3 +92,8 @@ async def test_traced_calls_account_for_the_request_time(standin_pipeline):
 async def test_trace_marks_failed_attempts_as_retries(standin_pipeline):
     reply = await standin_pipeline(content="grounded", fail_rate=1.0).answer(QUESTION)
     assert [s["outcome"] for s in reply.steps if s["attempt"] > 0] == ["error"] * reply.retries
+
+
+async def test_truncated_draft_is_never_sent(standin_pipeline):
+    reply = await standin_pipeline(content="truncated").answer(QUESTION)
+    assert reply.kind != "answer"

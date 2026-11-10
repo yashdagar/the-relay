@@ -63,7 +63,7 @@ def percentile(values: Sequence[float], p: float) -> float:
     return float(np.percentile(values, p))
 
 
-def _numbers(text: str) -> set[str]:
+def numbers(text: str) -> set[str]:
     return {n.replace(",", "") for n in NUMBER.findall(text)}
 
 
@@ -79,8 +79,8 @@ def is_grounded(reply: Reply) -> bool:
     retrieved = {c.id for c in reply.retrieved}
     if any(c.id not in retrieved for c in reply.citations):
         return False
-    claimed = _numbers(answer_body(reply.text))
-    supported = set().union(*(_numbers(c.text) for c in reply.citations))
+    claimed = numbers(answer_body(reply.text))
+    supported = set().union(*(numbers(c.text) for c in reply.citations))
     return claimed <= supported
 
 

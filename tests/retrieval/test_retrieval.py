@@ -5,7 +5,7 @@ import pytest
 import thresholds
 from gold import QUESTIONS, expects_answer
 from relay.eval import percentile, precision_at_k, recall_at_k, reciprocal_rank
-from relay.retrieval import DEFAULT_SETTING, SETTINGS, Retriever
+from relay.retrieval import DEFAULT_SETTING, SETTINGS, Retriever, interleave
 
 ANSWERABLE = [q for q in QUESTIONS if expects_answer(q)]
 
@@ -91,3 +91,18 @@ def test_search_latency_p95_is_within_budget(retriever):
         retriever.search(q["question"])
         timings.append((time.perf_counter() - start) * 1000)
     assert percentile(timings, 95) <= thresholds.RETRIEVAL_MAX_SEARCH_P95_MS
+
+
+def test_interleave_takes_the_best_of_each_list_first():
+    assert interleave(["a1", "a2", "a3"], ["b1", "b2"], ["c1"]) == [
+        "a1",
+        "b1",
+        "c1",
+        "a2",
+        "b2",
+        "a3",
+    ]
+
+
+def test_interleave_drops_repeats():
+    assert interleave(["a", "b"], ["a", "c"]) == ["a", "b", "c"]

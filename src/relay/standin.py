@@ -41,7 +41,7 @@ BOGUS_ID = "9999.99999v9:300:999"
 
 @dataclass(frozen=True)
 class StandInConfig:
-    content: Literal["grounded", "uncited", "bogus_citation"] = "grounded"
+    content: Literal["grounded", "uncited", "bogus_citation", "truncated"] = "grounded"
     rpm: int | None = 30
     tpm: int | None = 8000
     rpd: int | None = 1000
@@ -174,6 +174,8 @@ class StandIn:
             sentence = _first_sentence(text)
             if self.config.content == "uncited":
                 return sentence
+            if self.config.content == "truncated":
+                return f"{sentence} [{chunk_id}] It also uses"
             cited = BOGUS_ID if self.config.content == "bogus_citation" else chunk_id
             return f"{sentence} [{cited}]"
         return "OK"
@@ -225,13 +227,14 @@ class StandIn:
         ttft_s = self._ttft_s(model)
         decode_s = PROFILES.get(model, DEFAULT_PROFILE).decode_ms_per_token / 1000
         headers = state.headers()
+        finish = "length" if self.config.content == "truncated" and step == "draft" else "stop"
         return StreamingResponse(
-            self._stream(model, text, prompt_tokens, ttft_s, decode_s),
+            self._stream(model, text, prompt_tokens, ttft_s, decode_s, finish),
             media_type="text/event-stream",
             headers=headers,
         )
 
-    async def _stream(self, model, text, prompt_tokens, ttft_s, decode_s):
+    async def _stream(self, model, text, prompt_tokens, ttft_s, decode_s, finish):
         self.in_flight += 1
         try:
             await asyncio.sleep(ttft_s)
@@ -245,7 +248,7 @@ class StandIn:
             yield _sse(
                 {
                     "model": model,
-                    "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                    "choices": [{"index": 0, "delta": {}, "finish_reason": finish}],
                     "x_groq": {"usage": usage},
                 }
             )

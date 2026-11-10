@@ -35,6 +35,7 @@ class CallResult:
     tokens_out: int = 0
     headers: dict[str, str] = field(default_factory=dict)
     error: str | None = None
+    finish_reason: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -113,6 +114,7 @@ class ModelClient:
                     result.tokens_in = usage.get("prompt_tokens", 0)
                     result.tokens_out = usage.get("completion_tokens", 0)
                 for choice in chunk.get("choices", []):
+                    result.finish_reason = choice.get("finish_reason") or result.finish_reason
                     delta = choice.get("delta", {})
                     result.reasoning += delta.get("reasoning") or ""
                     if content := delta.get("content"):
