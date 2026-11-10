@@ -1,0 +1,11 @@
+request_id,scenario,source,start_time,first_token_ms,total_ms,status,retries,tokens_in,tokens_out,retrieval_setting,answer_grade,queue_depth
+retrieval-300w-k5-bm25-att-01,retrieval,real,1794347106.861,1485.5,1485.5,ok,0,4848,147,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-mos-02,retrieval,real,1794347126.861,1744.9,1744.9,ok,0,6301,186,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-mos-03,retrieval,real,1794347146.862,1943.6,1943.6,ok,0,5638,238,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-mos-06,retrieval,real,1794347166.863,889.5,889.5,ok,0,2954,70,300w-k5-bm25,refused_wrongly,0
+retrieval-300w-k5-bm25-dc-04,retrieval,real,1794347186.863,2176.4,2176.4,ok,0,5925,305,300w-k5-bm25,refused_wrongly,0
+retrieval-300w-k5-bm25-dc-07,retrieval,real,1794347206.864,2023.0,2023.0,ok,0,5523,304,300w-k5-bm25,wrong,0
+retrieval-300w-k5-bm25-dc-08,retrieval,real,1794347226.865,3297.3,3297.3,ok,0,5108,196,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-dc-09,retrieval,real,1794347246.866,1042.0,1042.0,ok,0,3913,130,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-x-01,retrieval,real,1794347266.867,1055.1,1055.1,ok,0,2313,110,300w-k5-bm25,refused_wrongly,0
+retrieval-300w-k5-bm25-inj-03,retrieval,real,1794347286.868,938.4,938.4,ok,0,2871,87,300w-k5-bm25,refused_wrongly,0
