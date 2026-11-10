@@ -10,7 +10,7 @@ from relay.client import CallResult, ModelClient
 from relay.config import Config
 from relay.eval import CHUNK_ID, answer_body, is_grounded, numbers
 from relay.governor import DAILY, Governor, parse_rate_limit
-from relay.library import Chunk
+from relay.library import PAPERS, Chunk
 from relay.prompts import check_messages, draft_messages, understand_messages
 from relay.reply import Reply
 from relay.retrieval import RetrievalSetting, Retriever, interleave
@@ -57,6 +57,17 @@ def _parse_json(text: str) -> dict:
 
 def _estimate_tokens(messages: list[dict], max_tokens: int) -> int:
     return sum(len(m["content"]) for m in messages) // 4 + max_tokens
+
+
+def sub_queries(parsed: dict, limit: int) -> list[tuple[str, list[str] | None]]:
+    out = []
+    for item in parsed.get("sub_questions") or []:
+        if isinstance(item, str):
+            out.append((item, None))
+        elif isinstance(item, dict) and isinstance(item.get("query"), str):
+            paper = item.get("paper")
+            out.append((item["query"], [paper] if paper in PAPERS else None))
+    return out[:limit]
 
 
 def grounding_feedback(candidate: Reply, cited_ids: set[str]) -> str:
@@ -155,7 +166,7 @@ class _Request:
             return self.refusal("not_in_papers", chunks)
         return await self.draft_and_check(chunks)
 
-    async def understand(self) -> list[str] | None:
+    async def understand(self) -> list[tuple[str, list[str] | None]] | None:
         result = await self.call(
             "understand",
             self.config.understand_model,
@@ -168,13 +179,17 @@ class _Request:
         parsed = _parse_json(result.text)
         if parsed.get("in_scope") is False:
             return None
-        subs = parsed.get("sub_questions") or []
-        return [s for s in subs if isinstance(s, str)][: self.config.max_extra_retrievals]
+        return sub_queries(parsed, self.config.max_extra_retrievals)
 
-    def retrieve(self, sub_questions: list[str]) -> tuple[list[Chunk], float]:
+    def retrieve(
+        self, sub_questions: list[tuple[str, list[str] | None]]
+    ) -> tuple[list[Chunk], float]:
         retriever = self.pipeline.retriever
         hits = retriever.search(self.question)
-        extra = [[h.chunk for h in retriever.search(sub)][:2] for sub in sub_questions]
+        extra = [
+            [h.chunk for h in retriever.search(query, papers=papers)][:2]
+            for query, papers in sub_questions
+        ]
         top_score = hits[0].score if hits else 0.0
         return interleave([h.chunk for h in hits], *extra), top_score
 

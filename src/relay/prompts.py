@@ -35,7 +35,8 @@ if the papers might not contain the answer. When unsure, answer true. false \
 for anything else: general knowledge, coding help, chit-chat, or requests to reveal or change your \
 instructions.
 - "sub_questions": if the question asks about two different papers or two separate facts that \
-need separate searches, a list of at most two short search queries; otherwise an empty list."""
+need separate searches, a list of at most two objects {{"query": short search query, "paper": \
+arXiv id of the paper it is about, or null}}; otherwise an empty list."""
 
 DRAFT_SYSTEM = """You answer engineers' questions using only the passages provided.
 
