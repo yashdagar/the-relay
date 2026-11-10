@@ -1,0 +1,5 @@
+request_id,scenario,source,start_time,first_token_ms,total_ms,status,retries,tokens_in,tokens_out,retrieval_setting,answer_grade,queue_depth
+retrieval-300w-k5-bm25-dc-04,retrieval,real,1794347401.172,4438.5,4438.5,ok,0,8836,423,300w-k5-bm25,correct,0
+retrieval-300w-k5-bm25-dc-07,retrieval,real,1794347421.172,2053.2,2053.2,ok,0,5546,307,300w-k5-bm25,wrong,0
+retrieval-300w-k5-bm25-x-01,retrieval,real,1794347441.173,8287.0,8287.0,ok,0,8935,244,300w-k5-bm25,wrong,0
+retrieval-300w-k5-bm25-inj-03,retrieval,real,1794347461.173,11133.2,11133.2,ok,0,4362,157,300w-k5-bm25,refused_wrongly,0

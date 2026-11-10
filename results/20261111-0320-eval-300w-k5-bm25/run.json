@@ -1,0 +1,18 @@
+{
+  "started": "2026-11-11T03:20:01",
+  "setting": "300w-k5-bm25",
+  "spacing_s": 20.0,
+  "questions": [
+    "dc-04",
+    "dc-07",
+    "x-01",
+    "inj-03"
+  ],
+  "models": {
+    "understand": "openai/gpt-oss-20b",
+    "draft": "openai/gpt-oss-120b",
+    "lean_draft": "openai/gpt-oss-20b",
+    "check": "qwen/qwen3.8-27b"
+  },
+  "commit": "d9fb988"
+}
