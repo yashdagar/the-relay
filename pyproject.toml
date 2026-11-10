@@ -1,0 +1,52 @@
+[project]
+name = "relay"
+version = "0.1.0"
+description = "A cited Q&A pipeline over three arXiv papers, built to stay honest under load and rate limits"
+readme = "README.md"
+authors = [
+    { name = "yashdagar", email = "yashdagar4557@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastembed>=0.9.1",
+    "httpx>=0.28.1",
+    "numpy>=2.5.4",
+    "pandas>=3.1.1",
+    "pymupdf>=2.1",
+    "python-dotenv>=1.2.4",
+    "rank-bm25>=0.2.2",
+    "starlette>=1.10.0",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1.post1",
+    "ruff>=0.17.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-m 'not real'"
+markers = [
+    "real: calls the Groq API and spends the daily budget; run with -m real",
+    "slow: drives load shapes against the stand-in for several seconds",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["relay", "gold", "thresholds"]
