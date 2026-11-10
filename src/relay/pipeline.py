@@ -157,7 +157,18 @@ class _Request:
     def refusal(self, reason: str, retrieved: list[Chunk] = ()) -> Reply:
         return self.reply("refusal", REFUSALS[reason], reason=reason, retrieved=list(retrieved))
 
+    def budget_gone(self) -> bool:
+        config, governor = self.config, self.governor
+        no_draft = governor.daily_exhausted(config.draft_model) and governor.daily_exhausted(
+            config.lean_draft_model
+        )
+        return no_draft or governor.daily_exhausted(config.check_model)
+
     async def run(self) -> Reply:
+        if self.budget_gone():
+            self.failure = "exhausted"
+            chunks, _ = self.retrieve([])
+            return self.degraded(chunks)
         sub_questions = await self.understand()
         if sub_questions is None:
             return self.refusal("out_of_scope")
@@ -271,8 +282,11 @@ class _Request:
         if failure == "exhausted":
             reason = "budget_exhausted"
             wait_s = max(
-                self.governor.exhausted_for_s(m)
-                for m in (self.config.draft_model, self.config.lean_draft_model)
+                min(
+                    self.governor.exhausted_for_s(self.config.draft_model),
+                    self.governor.exhausted_for_s(self.config.lean_draft_model),
+                ),
+                self.governor.exhausted_for_s(self.config.check_model),
             )
             per_request_s = self.config.governor_day_s / min(
                 lim.requests_per_day for lim in self.config.limits.values()
