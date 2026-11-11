@@ -1,7 +1,13 @@
 import pandas as pd
 import pytest
 
-from relay.tables import RESULT_COLUMNS, latency_table, outcomes_table, retrieval_table
+from relay.tables import (
+    RESULT_COLUMNS,
+    latency_table,
+    outcomes_table,
+    render_markdown,
+    retrieval_table,
+)
 
 
 def row(i, scenario="burst", source="stand-in", **overrides):
@@ -114,3 +120,14 @@ def test_retrieval_table_reports_grade_shares_per_setting():
         25.0,
         25.0,
     ]
+
+
+def test_rendered_tables_have_a_row_per_scenario_and_setting():
+    rows = [row(0, scenario="steady"), row(1, scenario="retrieval", source="real")]
+    text = render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+    assert "Steady, 2/min" in text and "Paced 3/min" in text and "300 words, 5 pieces" in text
+
+
+def test_unmeasured_percentiles_render_as_not_measured():
+    rows = [row(0, scenario="steady", first_token_ms=None)]
+    assert "not measured" in render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
