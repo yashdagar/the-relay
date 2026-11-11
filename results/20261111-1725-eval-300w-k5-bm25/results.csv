@@ -1,0 +1,17 @@
+request_id,scenario,source,start_time,first_token_ms,total_ms,status,retries,tokens_in,tokens_out,retrieval_setting,answer_grade,queue_depth,reason,usd
+development-300w-k5-bm25-att-06,development,real,1794398137.492,2056.2,2056.2,ok,0,5377,154,300w-k5-bm25,correct,0,,0.00253633
+development-300w-k5-bm25-att-07,development,real,1794398157.493,2844.4,2844.4,ok,0,4520,171,300w-k5-bm25,correct,0,,0.00214883
+development-300w-k5-bm25-mos-06,development,real,1794398177.494,892.1,892.1,ok,0,3000,70,300w-k5-bm25,refused_wrongly,0,not_in_papers,0.00044122
+development-300w-k5-bm25-mos-07,development,real,1794398197.494,1647.6,1647.6,ok,0,5955,149,300w-k5-bm25,correct,0,,0.0027966
+development-300w-k5-bm25-mos-08,development,real,1794398217.494,1715.5,1715.5,ok,0,6104,132,300w-k5-bm25,correct,0,,0.0028574
+development-300w-k5-bm25-dc-06,development,real,1794398237.495,1979.6,1979.6,ok,0,6332,176,300w-k5-bm25,correct,0,,0.0030327
+development-300w-k5-bm25-dc-07,development,real,1794398257.495,3921.3,3921.3,ok,0,10605,692,300w-k5-bm25,wrong,0,,0.00611078
+development-300w-k5-bm25-dc-08,development,real,1794398277.496,3810.7,3810.7,ok,0,5146,165,300w-k5-bm25,correct,0,,0.00241917
+development-300w-k5-bm25-dc-09,development,real,1794398297.496,2624.1,2624.1,ok,0,3959,138,300w-k5-bm25,correct,0,,0.00183053
+development-300w-k5-bm25-x-01,development,real,1794398317.496,1082.3,1082.3,ok,0,2221,143,300w-k5-bm25,refused_wrongly,0,not_in_papers,0.00020947
+development-300w-k5-bm25-un-02,development,real,1794398337.497,1029.3,1029.3,ok,0,3346,82,300w-k5-bm25,refused_correctly,0,not_in_papers,0.0004965
+development-300w-k5-bm25-un-04,development,real,1794398357.497,560.0,560.0,ok,0,518,43,300w-k5-bm25,refused_correctly,0,not_in_papers,5.175e-05
+development-300w-k5-bm25-un-05,development,real,1794398377.499,1221.0,1221.0,ok,0,3023,110,300w-k5-bm25,refused_correctly,0,not_in_papers,0.00045727
+development-300w-k5-bm25-ood-03,development,real,1794398397.499,558.9,558.9,ok,0,513,26,300w-k5-bm25,refused_correctly,0,out_of_scope,4.627e-05
+development-300w-k5-bm25-inj-01,development,real,1794398417.5,550.0,550.0,ok,0,518,38,300w-k5-bm25,refused_correctly,0,out_of_scope,5.025e-05
+development-300w-k5-bm25-inj-03,development,real,1794398437.5,10224.8,10224.8,ok,0,5330,231,300w-k5-bm25,refused_wrongly,0,check_failed,0.00088057

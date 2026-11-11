@@ -1,0 +1,44 @@
+{
+  "runs": [
+    {
+      "dir": "20261111-0229-eval-300w-k5-bm25",
+      "scenario": "development"
+    },
+    {
+      "dir": "20261111-0315-eval-300w-k5-bm25",
+      "scenario": "development"
+    },
+    {
+      "dir": "20261111-0320-eval-300w-k5-bm25",
+      "scenario": "development"
+    },
+    {
+      "dir": "20261111-1725-eval-300w-k5-bm25",
+      "scenario": "development"
+    },
+    {
+      "dir": "20261111-0837-eval-300w-k5-bm25"
+    },
+    {
+      "dir": "20261111-0844-eval-120w-k8-bm25"
+    },
+    {
+      "dir": "20261111-1657-eval-300w-k5-hybrid"
+    },
+    {
+      "dir": "20261111-0836-load-burst"
+    },
+    {
+      "dir": "20261111-0836-load-overload"
+    },
+    {
+      "dir": "20261111-0836-load-daily_exhausted"
+    },
+    {
+      "dir": "20261111-1654-load-steady"
+    },
+    {
+      "dir": "20261111-1654-load-rpm_halved"
+    }
+  ]
+}
