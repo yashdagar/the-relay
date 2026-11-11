@@ -54,6 +54,8 @@ def main() -> None:
 
     config = replace(Config.groq(), retrieval=SETTINGS[args.setting])
     questions = [q for q in QUESTIONS if not args.ids or q["id"] in args.ids]
+    if not questions:
+        parser.error(f"no gold question matches --ids {args.ids}")
     started = datetime.now()
     rows, replies = asyncio.run(evaluate(config, questions, args.spacing, args.scenario))
     out = ROOT / "results" / f"{started:%Y%m%d-%H%M}-eval-{args.setting}"

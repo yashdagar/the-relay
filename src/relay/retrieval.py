@@ -86,6 +86,11 @@ class Retriever:
         if setting.rerank:
             list(_reranker().rerank("warm up", ["warm up"]))
 
+    def lexical_top_score(self, query: str, papers: list[str] | None = None) -> float:
+        allowed = np.isin(self.papers, papers) if papers else np.ones(len(self.chunks), bool)
+        scores = self.bm25.get_scores(_tokens(query))[allowed]
+        return float(scores.max()) if len(scores) else 0.0
+
     def search(self, query: str, papers: list[str] | None = None) -> list[Hit]:
         allowed = np.isin(self.papers, papers) if papers else np.ones(len(self.chunks), bool)
         bm25_order = _rank(self.bm25.get_scores(_tokens(query)), allowed)

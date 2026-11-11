@@ -106,3 +106,10 @@ def test_interleave_takes_the_best_of_each_list_first():
 
 def test_interleave_drops_repeats():
     assert interleave(["a", "b"], ["a", "c"]) == ["a", "b", "c"]
+
+
+def test_lexical_top_score_does_not_depend_on_the_ranking_method():
+    query = "how are chunk boundaries predicted"
+    bm25 = Retriever(SETTINGS["300w-k5-bm25"])
+    hybrid = Retriever(SETTINGS["300w-k5-hybrid"])
+    assert hybrid.lexical_top_score(query) == pytest.approx(bm25.search(query)[0].score)

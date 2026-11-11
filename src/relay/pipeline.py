@@ -201,7 +201,7 @@ class _Request:
             [h.chunk for h in retriever.search(query, papers=papers)][:2]
             for query, papers in sub_questions
         ]
-        top_score = hits[0].score if hits else 0.0
+        top_score = retriever.lexical_top_score(self.question)
         return interleave([h.chunk for h in hits], *extra), top_score
 
     def choose_draft(self, chunks: list[Chunk]) -> tuple[str, list[Chunk]] | None:
