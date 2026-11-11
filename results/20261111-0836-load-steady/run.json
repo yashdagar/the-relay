@@ -1,0 +1,29 @@
+{
+  "started": "2026-11-11T08:36:55",
+  "scenario": "steady",
+  "phases": [
+    {
+      "duration_s": 1800,
+      "rate_per_min": 2
+    }
+  ],
+  "requests": 71,
+  "standin": {
+    "content": "oracle",
+    "rpm": 30,
+    "tpm": 8000,
+    "rpd": 1000,
+    "tpd": 200000,
+    "minute_s": 60.0,
+    "day_s": 86400.0,
+    "ttft_ms": null,
+    "fail_rate": 0.0,
+    "slow_rate": 0.0,
+    "slow_factor": 8.0,
+    "overload_knee": 16,
+    "overload_slope": 0.15,
+    "chunk_tokens": 4,
+    "seed": 0
+  },
+  "commit": "f801c66"
+}
