@@ -18,6 +18,7 @@ RESULT_COLUMNS = [
     "answer_grade",
     "queue_depth",
     "reason",
+    "usd",
 ]
 
 SCENARIO_KEY = ["scenario", "source"]
@@ -52,9 +53,8 @@ def _latency_row(group: pd.DataFrame) -> pd.Series:
     )
 
 
-def _outcome_row(group: pd.DataFrame, usd_per_mtok_in: float, usd_per_mtok_out: float):
+def _outcome_row(group: pd.DataFrame) -> pd.Series:
     ok = group[group["status"] == "ok"]
-    usd = (ok["tokens_in"] * usd_per_mtok_in + ok["tokens_out"] * usd_per_mtok_out) / 1e6
     return pd.Series(
         {
             "succeeded_pct": _pct(group["status"] == "ok"),
@@ -64,7 +64,7 @@ def _outcome_row(group: pd.DataFrame, usd_per_mtok_in: float, usd_per_mtok_out: 
             "retries_per_request": group["retries"].mean(),
             "peak_queue_length": group["queue_depth"].max(),
             "tokens_per_answer": _tokens(ok).mean(),
-            "usd_per_1000_answers": usd.mean() * 1000,
+            "usd_per_1000_answers": ok["usd"].mean() * 1000,
         }
     )
 
@@ -89,12 +89,8 @@ def latency_table(results: pd.DataFrame) -> pd.DataFrame:
     return results.groupby(SCENARIO_KEY).apply(_latency_row, include_groups=False)
 
 
-def outcomes_table(
-    results: pd.DataFrame, *, usd_per_mtok_in: float, usd_per_mtok_out: float
-) -> pd.DataFrame:
-    return results.groupby(SCENARIO_KEY).apply(
-        _outcome_row, usd_per_mtok_in, usd_per_mtok_out, include_groups=False
-    )
+def outcomes_table(results: pd.DataFrame) -> pd.DataFrame:
+    return results.groupby(SCENARIO_KEY).apply(_outcome_row, include_groups=False)
 
 
 def retrieval_table(results: pd.DataFrame) -> pd.DataFrame:

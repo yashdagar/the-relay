@@ -20,6 +20,7 @@ def row(i, scenario="burst", source="stand-in", **overrides):
         "answer_grade": "correct",
         "queue_depth": i,
         "reason": "",
+        "usd": 0.0007,
     }
     return {**base, **overrides}
 
@@ -65,7 +66,7 @@ def test_offered_rate_is_requests_per_minute_over_the_arrival_window(results):
 
 
 def test_outcome_percentages_have_one_decimal(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[
         ("burst", "stand-in"), ["succeeded_pct", "rate_limited_pct", "timed_out_pct"]
     ].tolist() == [
@@ -76,22 +77,23 @@ def test_outcome_percentages_have_one_decimal(results):
 
 
 def test_retries_per_request_averages_over_all_requests(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "retries_per_request"] == pytest.approx(0.75)
 
 
 def test_peak_queue_length_is_the_largest_queue_depth_seen(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "peak_queue_length"] == 3
 
 
 def test_tokens_per_answer_counts_only_successful_requests(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "tokens_per_answer"] == 1200
 
 
-def test_cost_per_thousand_answers_uses_token_prices(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.5, usd_per_mtok_out=1.0)
+def test_cost_per_thousand_answers_averages_successful_request_cost(results):
+    results.loc[2, "usd"] = 5.0
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "usd_per_1000_answers"] == pytest.approx(0.7)
 
 

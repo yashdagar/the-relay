@@ -51,5 +51,5 @@ def test_at_least_fifteen_questions_were_graded(results):
 
 def test_every_table_can_be_computed_from_the_raw_file(results):
     assert not latency_table(results).empty
-    assert not outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0).empty
+    assert not outcomes_table(results).empty
     assert not retrieval_table(results).empty

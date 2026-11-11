@@ -4,8 +4,17 @@ from pathlib import Path
 
 import pandas as pd
 
+from relay.config import PRICES_USD_PER_MTOK
 from relay.reply import Reply
 from relay.tables import RESULT_COLUMNS
+
+
+def request_usd(steps: list[dict]) -> float:
+    total = 0.0
+    for step in steps:
+        usd_in, usd_out = PRICES_USD_PER_MTOK.get(step["model"], (0.0, 0.0))
+        total += (step["tokens_in"] * usd_in + step["tokens_out"] * usd_out) / 1e6
+    return total
 
 
 def result_row(
@@ -33,6 +42,7 @@ def result_row(
         "answer_grade": answer_grade,
         "queue_depth": reply.queue_depth,
         "reason": reply.reason or "",
+        "usd": round(request_usd(reply.steps), 8),
     }
     return {column: row[column] for column in RESULT_COLUMNS}
 

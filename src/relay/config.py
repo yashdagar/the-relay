@@ -29,6 +29,12 @@ GROQ_LIMITS = {
     "qwen/qwen3.8-27b": ModelLimits(),
 }
 
+PRICES_USD_PER_MTOK = {
+    "openai/gpt-oss-120b": (0.15, 0.60),
+    "openai/gpt-oss-20b": (0.075, 0.30),
+    "qwen/qwen3.8-27b": (0.80, 4.00),
+}
+
 MODEL_EXTRA = {
     "openai/gpt-oss-20b": {"reasoning_effort": "low"},
     "openai/gpt-oss-120b": {"reasoning_effort": "low"},
