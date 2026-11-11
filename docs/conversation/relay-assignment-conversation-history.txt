@@ -6563,3 +6563,2601 @@ completed (exit code 0)
 ✻ Baked for 29m 54s · done 3:48 AM
 
 ※ recap: You're building The Relay assignment pipeline. The five free-tier load shapes are running against the stand-in right now. When they finish, I'll combine every run into results.csv and generate the brief's tables.
+
+❯ /export                                                                       
+  ⎿  Conversation exported to:
+     /Users/yash/Documents/Github/the-relay/relay-assignment-conversation
+     history.txt
+
+❯ do the remaining changes                                                      
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ It's 08:36. The shapes started at 03:48, and steady and rpm_halved (30-minute
+  shapes) are still running. The other three finished. Checking whether they're
+  stuck or the laptop slept:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The laptop slept, and both 30-minute runs are frozen at 0% CPU, so their
+  timings would be meaningless anyway. Before killing them, checking whether
+  sleep also overlapped the three runs that finished:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The laptop slept at 03:52, so all five benchmark runs are invalid, though I'll
+  keep the three that finished, marked as invalid. I'm stopping the two stuck
+  runs and re-running all five under caffeinate next, so please keep the lid
+  open or plug in for the next 30 minutes.
+
+⏺ Bash(pkill -f "python -m relay.load"; sleep 1; pgrep -f "python -m relay.load"
+      | wc -l; cd ~/Documents/Github/the-relay && for d in
+      results/20261111-0348-load-*; do…)
+  ⎿  0
+     20261111-0348-load-burst
+     20261111-0348-load-daily_exhausted
+     20261111-0348-load-overload
+  ⎿  Created results/20261111-0348-load-burst/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid run: do not use. The laptop entered clamshell sleep at 0
+        +3:52, four minutes after this shape started at 03:48, and woke a
+        +t 08:14; the run finished after waking, so its timings span abou
+        +t 4.5 hours of sleep. Re-run under caffeinate the same morning. 
+        +Kept because raw runs are never deleted.                        
+  ⎿  Created results/20261111-0348-load-daily_exhausted/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid run: do not use. The laptop entered clamshell sleep at 0
+        +3:52, four minutes after this shape started at 03:48, and woke a
+        +t 08:14; the run finished after waking, so its timings span abou
+        +t 4.5 hours of sleep. Re-run under caffeinate the same morning. 
+        +Kept because raw runs are never deleted.                        
+  ⎿  Created results/20261111-0348-load-overload/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid run: do not use. The laptop entered clamshell sleep at 0
+        +3:52, four minutes after this shape started at 03:48, and woke a
+        +t 08:14; the run finished after waking, so its timings span abou
+        +t 4.5 hours of sleep. Re-run under caffeinate the same morning. 
+        +Kept because raw runs are never deleted.                        
+⏺ Background command "Wait for all load shapes to finish, then show their
+output" failed with exit code 144
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ The re-runs are going under caffeinate, so I'm working on Table 3 now, which
+  needs real Groq runs. I'm running three settings on the current code over a
+  fixed set of 20 questions each, since the earlier default run predates the
+  router and truncation fixes.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ While both runs go, I'm checking Groq's paid prices. The free tier costs $0,
+  so "cost per 1,000 answers" has to use list prices.
+
+⏺ web-fetch(Fetch Groq model pricing)
+  ⎿  Received 954 bytes
+
+⏺ Background command "Run Table 3 evaluation on three settings sequentially on
+Groq" completed (exit code 0)
+
+⏺ The Table 3 runs finished much faster than 20 minutes, so something went
+  wrong. Checking:
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+⏺ Zsh didn't split the unquoted $IDS, so all three runs evaluated zero questions
+  and spent no budget. I'm deleting the three empty run directories I made and
+  re-running with the ids spelled out.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ web-fetch(Fetch Groq prices from models docs)
+  ⎿  Received 849 bytes
+
+⏺ Two things are running now:
+
+  - Load shapes: all five, re-running under caffeinate, about 30 minutes.
+  - Table 3: three settings × 20 questions on Groq, about 20 minutes, after I
+    fixed my zsh mistake that made the first attempt evaluate zero questions.
+
+  New finding from Groq's price list (https://console.groq.com/docs/models):
+
+  - gpt-oss-120b (draft): $0.15 per million input tokens, $0.60 per million
+    output.
+  - gpt-oss-20b (understand): $0.075 in, $0.30 out.
+  - qwen3.8-27b (check): $0.80 in, $4.00 out. That's 5× the draft model's price.
+
+  So the check step, which reads all the passages again, is likely about 80% of
+  the cost per answer. That directly conflicts with "the bill small", and you
+  should decide it once the numbers are in. Since results.csv has no per-model
+  token counts, I'll add a per-request cost column computed from each request's
+  step trace, so cost per 1,000 answers is computable from the file.
+
+  Once both runs finish:
+
+  1. Add the cost column and a guard so an empty --ids list fails loudly.
+  2. Assemble results/results.csv from a list of the valid runs, regrading saved
+     replies, and generate docs/tables.md with Tables 2a, 2b and 3.
+  3. Write the "where the time goes" breakdown of one slow request from its
+     trace.
+  4. Draft the write-up, plus its .tex version.
+
+  Your export landed in the repo root as relay-assignment-conversation 
+  history.txt, and it isn't committed. I'll move it to docs/conversation/ with
+  the submission unless you'd rather keep it somewhere else.
+
+✻ Cogitated for 2m 8s · done 8:38 AM
+
+※ recap: You're building The Relay assignment, and the five free-tier load shapes plus three Table 3 settings on Groq are running now. Once they finish, I'll put all valid runs into one results.csv and generate the brief's tables.
+
+⏺ Background command "Rerun Table 3 evaluation with explicit question ids"
+completed (exit code 0)
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ The 300w-k5-hybrid run refused every answerable question, probably because the
+  7.0 refusal threshold was tuned for raw BM25 scores while hybrid scores are
+  around 0.03. I'm checking the replies to confirm that.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Every refusal traced back to the score threshold, costing about 11K
+  gpt-oss-20b tokens with no draft tokens, so I'll make the decision on BM25
+  score regardless of retrieval method. The src change waits until the load
+  shapes finish.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Both valid Table 3 runs are in: 300w-k5-bm25 and 120w-k8-bm25 each got 15 of
+  16 answer-expecting questions right, with all refusals handled. I'm checking
+  the two misses now while the shorter-shape runs finish.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Bash(cd ~/Documents/Github/the-relay && cat >
+      results/20261111-0837-eval-300w-k5-bm25/NOTES.md <<'EOF'
+      # Notes…)
+  ⎿  done
+  ⎿  Created results/20261111-0837-eval-300w-k5-bm25/NOTES.md (+6 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Table 3 run. Fixed subset of 20 gold questions (first five answe
+        +rable per paper, un-01, un-03, ood-01, ood-02, inj-02), code at 
+        +f801c66 (src identical to fceb373), one question every 20 s.    
+      4 +                                                                
+      5 +- 14 of 15 answerable correct, inj-02 correct, all 4 refusal que
+        +stions refused.                                                 
+      6 +- dc-04 refused: the draft model returned NOT_IN_PAPERS although
+        + the retrieved piece 177 states 59.9 and 66.3. The same question
+        + was answered correctly in results/20261111-0320-eval-300w-k5-bm
+        +25 with the same passages, so this is model variance at temperat
+        +ure 0, not retrieval.                                           
+  ⎿  Created results/20261111-0844-eval-120w-k8-bm25/NOTES.md (+6 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Table 3 run, same 20 questions and code as results/20261111-0837
+        +-eval-300w-k5-bm25.                                             
+      4 +                                                                
+      5 +- 14 of 15 answerable correct, inj-02 correct, all 4 refusal que
+        +stions refused.                                                 
+      6 +- dc-01 graded wrong: with 120-word pieces the passage naming th
+        +e smoothing module was not retrieved, and the draft answered "a 
+        +routing module ... and a downsampler" from the figure caption pi
+        +ece. Grounded and passed by the check model, but it names the pa
+        +rts of the chunking layer, not of dynamic chunking. This is the 
+        +split-fact failure the offline retrieval report predicted for 12
+        +0-word pieces.                                                  
+  ⎿  Created results/20261111-0850-eval-300w-k5-hybrid/NOTES.md (+5 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid as a Table 3 row: do not use for quality.               
+      4 +                                                                
+      5 +Every answer-expecting question was refused as not_in_papers rig
+        +ht after the understand step. The decide step compares the top r
+        +etrieval score with 7.0, a threshold calibrated on raw BM25 scor
+        +es, but hybrid hits carry reciprocal-rank-fusion scores (about 0
+        +.03), so every question fell below it. Found from the step trace
+        +s (understand only, no draft). Cost about 11K gpt-oss-20b tokens
+        + and no draft or check tokens. Fixed by always deciding on the l
+        +exical score; re-run separately.                                
+
+⏺ Waiting for steady and rpm_halved to finish, about 10 more minutes, before
+  touching src.
+
+  Table 3 so far:
+
+  - 300w-k5-bm25: 14 of 15 answerable correct. The one miss is dc-04: the model
+    refused, though the same passages produced a correct answer in an earlier
+    run.
+  - 120w-k8-bm25: 14 of 15 answerable correct. Its miss is dc-01: with 120-word
+    pieces it lost the smoothing-module passage and answered with the wrong pair
+    of modules. The offline retrieval report predicted exactly this.
+  - 300w-k5-hybrid: invalid because of the threshold bug. It cost about 11K
+    cheap gpt-oss-20b tokens and no draft tokens. I'll re-run it after the fix.
+
+  Notes for all three runs are written.
+
+✻ Churned for 41s · done 8:57 AM
+
+※ recap: We're building The Relay assignment and are collecting final measurements: the load shapes finish in a few minutes, and two of three Table 3 retrieval settings are done. Next, I'll fix the hybrid score threshold and re-run that third setting.
+
+⏺ Background command "Re-run five load shapes in parallel under caffeinate"
+completed (exit code 0)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ API Error: Your computer went to sleep mid-response. The response 
+  above may be incomplete.
+
+✻ Baked for 1h 13m 33s · done 12:04 PM
+
+⏺ Background command "Check load completion, sleep events and summarize each
+shape" completed (exit code 0)
+
+⏺ API Error: Your computer went to sleep mid-response. The response 
+  above may be incomplete.
+
+✻ Baked for 3m 15s · done 12:07 PM
+
+※ recap: We're finishing The Relay assignment: the load re-runs are nearly done and Table 3 has two valid settings out of three. Next, once the load runs finish, I'll fix the hybrid refusal threshold and re-run the hybrid setting on Groq.
+
+❯ continue                                                                      
+
+  Ran 2 shell commands (ctrl+o to expand)
+⏺ The laptop slept at 09:05:47 and interrupted steady and rpm_halved, so I'm
+  marking those two invalid and re-running them. Please keep the lid open or
+  plug in for the next 31 minutes; meanwhile I'll make the src changes in a
+  separate worktree.
+
+⏺ Bash(cd ~/Documents/Github/the-relay && for s in steady rpm_halved; do printf
+      '# Notes\n\nInvalid run: do not use. The laptop entered clamshell sleep at
+      09:05:47, ab…)
+  ⎿  6
+  ⎿  Created results/20261111-0836-load-burst/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Valid run. Started 08:36 under caffeinate and finished by 08:57,
+        + before the clamshell sleep at 09:05:47 that invalidated the ste
+        +ady and rpm_halved runs started at the same time. Code at f801c6
+        +6 (src identical to fceb373). Stand-in in oracle mode at measure
+        +d free-tier limits; see run.json for the stand-in settings and p
+        +hases.                                                          
+  ⎿  Created results/20261111-0836-load-daily_exhausted/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Valid run. Started 08:36 under caffeinate and finished by 08:57,
+        + before the clamshell sleep at 09:05:47 that invalidated the ste
+        +ady and rpm_halved runs started at the same time. Code at f801c6
+        +6 (src identical to fceb373). Stand-in in oracle mode at measure
+        +d free-tier limits; see run.json for the stand-in settings and p
+        +hases.                                                          
+  ⎿  Created results/20261111-0836-load-overload/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Valid run. Started 08:36 under caffeinate and finished by 08:57,
+        + before the clamshell sleep at 09:05:47 that invalidated the ste
+        +ady and rpm_halved runs started at the same time. Code at f801c6
+        +6 (src identical to fceb373). Stand-in in oracle mode at measure
+        +d free-tier limits; see run.json for the stand-in settings and p
+        +hases.                                                          
+  ⎿  Created results/20261111-0836-load-rpm_halved/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid run: do not use. The laptop entered clamshell sleep at 0
+        +9:05:47, about a minute before this 30-minute shape (started 08:
+        +36) ended, and slept until about 10:37; the last requests stradd
+        +le the sleep (largest gap between arrivals 3815 s). caffeinate c
+        +annot prevent lid-close sleep on battery. Re-run with the lid op
+        +en.                                                             
+  ⎿  Created results/20261111-0836-load-steady/NOTES.md (+3 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Invalid run: do not use. The laptop entered clamshell sleep at 0
+        +9:05:47, about a minute before this 30-minute shape (started 08:
+        +36) ended, and slept until about 10:37; the last requests stradd
+        +le the sleep (largest gap between arrivals 3815 s). caffeinate c
+        +annot prevent lid-close sleep on battery. Re-run with the lid op
+        +en.                                                             
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ The .venv symlink would make the worktree import the main checkout's src,
+  because the package is installed in editable mode. Giving the worktree its own
+  environment instead:
+
+⏺ Bash(rm .venv && uv sync -q 2>&1 | tail -2; uv run python -c "import relay,
+      pathlib; print(pathlib.Path(relay.__file__).resolve())"; ln -s
+      ../../the-relay/data/chunk…)
+  ⎿  /Users/yash/Documents/Github/the-relay-dev/src/relay/__init__.py
+     chunks
+     papers
+     questions
+  ⎿  Created ~/Documents/Github/the-relay-dev/.cache (+1 -0)
+      1 +../the-relay/.cache                                             
+  ⎿  Deleted ~/Documents/Github/the-relay-dev/.venv (+0 -1)
+      1 -../the-relay/.venv                                              
+  ⎿  Created ~/Documents/Github/the-relay-dev/data/chunks (+1 -0)
+      1 +../../the-relay/data/chunks                                     
+
+⏺ Now the src work in the worktree. First the hybrid threshold fix, test first:
+
+⏺ Bash(cat >> tests/retrieval/test_retrieval.py <<'EOF'…)
+  ⎿  1 failed, 14 deselected in 3.14s
+  ⎿  Updated
+     ~/Documents/Github/the-relay-dev/tests/retrieval/test_retrieval.py (+7
+     -0)
+      106  
+      107  def test_interleave_drops_repeats():
+      108      assert interleave(["a", "b"], ["a", "c"]) == ["a", "b", "c
+           "]
+      109 +                                                              
+      110 +                                                              
+      111 +def test_lexical_top_score_does_not_depend_on_the_ranking_meth
+          +od():                                                         
+      112 +    query = "how are chunk boundaries predicted"              
+      113 +    bm25 = Retriever(SETTINGS["300w-k5-bm25"])                
+      114 +    hybrid = Retriever(SETTINGS["300w-k5-hybrid"])            
+      115 +    assert hybrid.lexical_top_score(query) == pytest.approx(bm
+          +25.search(query)[0].score)                                    
+  ⎿  (timeout 5m)
+
+⏺ Bash(python3 - <<'EOF'
+      import pathlib…)
+  ⎿  All checks passed!
+     81 passed in 5.34s
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/evaluate.py (+2 -0)
+      54  
+      55      config = replace(Config.groq(), retrieval=SETTINGS[args.set
+          ting])
+      56      questions = [q for q in QUESTIONS if not args.ids or q["id"
+          ] in args.ids]
+      57 +    if not questions:                                          
+      58 +        parser.error(f"no gold question matches --ids {args.ids
+         +}")                                                            
+      59      started = datetime.now()
+      60      rows, replies = asyncio.run(evaluate(config, questions, arg
+          s.spacing, args.scenario))
+      61      out = ROOT / "results" / f"{started:%Y%m%d-%H%M}-eval-{args
+          .setting}"
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/pipeline.py (+1 -1)
+      201              [h.chunk for h in retriever.search(query, papers=p
+           apers)][:2]
+      202              for query, papers in sub_questions
+      203          ]
+      204 -        top_score = hits[0].score if hits else 0.0            
+      204 +        top_score = retriever.lexical_top_score(self.question)
+      205          return interleave([h.chunk for h in hits], *extra), to
+           p_score
+      206  
+      207      def choose_draft(self, chunks: list[Chunk]) -> tuple[str, 
+           list[Chunk]] | None:
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/retrieval.py (+5 
+     -0)
+      86          if setting.rerank:
+      87              list(_reranker().rerank("warm up", ["warm up"]))
+      88  
+      89 +    def lexical_top_score(self, query: str, papers: list[str] |
+         + None = None) -> float:                                        
+      90 +        allowed = np.isin(self.papers, papers) if papers else n
+         +p.ones(len(self.chunks), bool)                                 
+      91 +        scores = self.bm25.get_scores(_tokens(query))[allowed] 
+      92 +        return float(scores.max()) if len(scores) else 0.0     
+      93 +                                                               
+      94      def search(self, query: str, papers: list[str] | None = Non
+          e) -> list[Hit]:
+      95          allowed = np.isin(self.papers, papers) if papers else n
+          p.ones(len(self.chunks), bool)
+      96          bm25_order = _rank(self.bm25.get_scores(_tokens(query))
+          , allowed)
+  ⎿  (timeout 5m)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I'm moving on to the cost column, the assembler and the table generator,
+  starting with the table tests.
+
+⏺ Bash(python3 - <<'EOF'
+      import pathlib…)
+  ⎿  !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!
+     !!!!!!!!!!
+     1 error in 0.61s
+  ⎿  Updated
+     ~/Documents/Github/the-relay-dev/tests/system/test_results_file.py (+1
+     -1)
+      51  
+      52  def test_every_table_can_be_computed_from_the_raw_file(results)
+          :
+      53      assert not latency_table(results).empty
+      54 -    assert not outcomes_table(results, usd_per_mtok_in=0.0, usd
+         -_per_mtok_out=0.0).empty                                       
+      54 +    assert not outcomes_table(results).empty                   
+      55      assert not retrieval_table(results).empty
+  ⎿  Created ~/Documents/Github/the-relay-dev/tests/unit/test_costs.py (+21
+     -0)
+       1 +import pytest                                                  
+       2 +                                                               
+       3 +from relay.records import request_usd                          
+       4 +                                                               
+       5 +                                                               
+       6 +def step(model, tokens_in, tokens_out):                        
+       7 +    return {"model": model, "tokens_in": tokens_in, "tokens_out
+         +": tokens_out}                                                 
+       8 +                                                               
+       9 +                                                               
+      10 +def test_request_cost_prices_each_step_at_its_own_model():     
+      11 +    steps = [step("openai/gpt-oss-120b", 1_000_000, 0), step("q
+         +wen/qwen3.8-27b", 0, 1_000_000)]                               
+      12 +    assert request_usd(steps) == pytest.approx(0.15 + 4.00)    
+      13 +                                                               
+      14 +                                                               
+      15 +def test_failed_attempts_are_still_paid_for():                 
+      16 +    steps = [step("openai/gpt-oss-20b", 1_000_000, 0), step("op
+         +enai/gpt-oss-20b", 1_000_000, 0)]                              
+      17 +    assert request_usd(steps) == pytest.approx(0.15)           
+      18 +                                                               
+      19 +                                                               
+      20 +def test_unknown_model_costs_nothing():                        
+      21 +    assert request_usd([step("stand-in-model", 10**6, 10**6)]) 
+         +== 0.0                                                         
+  ⎿  Updated ~/Documents/Github/the-relay-dev/tests/unit/test_tables.py (+8
+     -6)
+      20          "answer_grade": "correct",
+      21          "queue_depth": i,
+      22          "reason": "",
+      23 +        "usd": 0.0007,                                         
+      24      }
+      25      return {**base, **overrides}
+      26  
+     ...
+      66  
+      67  
+      68  def test_outcome_percentages_have_one_decimal(results):
+      68 -    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd
+         -_per_mtok_out=0.0)                                             
+      69 +    outcomes = outcomes_table(results)                         
+      70      assert outcomes.loc[
+      71          ("burst", "stand-in"), ["succeeded_pct", "rate_limited_
+          pct", "timed_out_pct"]
+      72      ].tolist() == [
+     ...
+      77  
+      78  
+      79  def test_retries_per_request_averages_over_all_requests(results
+          ):
+      79 -    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd
+         -_per_mtok_out=0.0)                                             
+      80 +    outcomes = outcomes_table(results)                         
+      81      assert outcomes.loc[("burst", "stand-in"), "retries_per_req
+          uest"] == pytest.approx(0.75)
+      82  
+      83  
+      84  def test_peak_queue_length_is_the_largest_queue_depth_seen(resu
+          lts):
+      84 -    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd
+         -_per_mtok_out=0.0)                                             
+      85 +    outcomes = outcomes_table(results)                         
+      86      assert outcomes.loc[("burst", "stand-in"), "peak_queue_leng
+          th"] == 3
+      87  
+      88  
+      89  def test_tokens_per_answer_counts_only_successful_requests(resu
+          lts):
+      89 -    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd
+         -_per_mtok_out=0.0)                                             
+      90 +    outcomes = outcomes_table(results)                         
+      91      assert outcomes.loc[("burst", "stand-in"), "tokens_per_answ
+          er"] == 1200
+      92  
+      93  
+      93 -def test_cost_per_thousand_answers_uses_token_prices(results): 
+      94 -    outcomes = outcomes_table(results, usd_per_mtok_in=0.5, usd
+         -_per_mtok_out=1.0)                                             
+      94 +def test_cost_per_thousand_answers_averages_successful_request_
+         +cost(results):                                                 
+      95 +    results.loc[2, "usd"] = 5.0                                
+      96 +    outcomes = outcomes_table(results)                         
+     … 3 more lines (ctrl+o to expand)
+
+⏺ Bash(python3 - <<'EOF'
+      import pathlib…)
+  ⎿  All checks passed!
+     .....................................................................
+        [100%]
+     69 passed in 0.41s
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/config.py (+6 -0)
+      29      "qwen/qwen3.8-27b": ModelLimits(),
+      30  }
+      31  
+      32 +PRICES_USD_PER_MTOK = {                                        
+      33 +    "openai/gpt-oss-120b": (0.15, 0.60),                       
+      34 +    "openai/gpt-oss-20b": (0.075, 0.30),                       
+      35 +    "qwen/qwen3.8-27b": (0.80, 4.00),                          
+      36 +}                                                              
+      37 +                                                               
+      38  MODEL_EXTRA = {
+      39      "openai/gpt-oss-20b": {"reasoning_effort": "low"},
+      40      "openai/gpt-oss-120b": {"reasoning_effort": "low"},
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/records.py (+10 -0)
+       4  
+       5  import pandas as pd
+       6  
+       7 +from relay.config import PRICES_USD_PER_MTOK                   
+       8  from relay.reply import Reply
+       9  from relay.tables import RESULT_COLUMNS
+      10  
+      11  
+      12 +def request_usd(steps: list[dict]) -> float:                   
+      13 +    total = 0.0                                                
+      14 +    for step in steps:                                         
+      15 +        usd_in, usd_out = PRICES_USD_PER_MTOK.get(step["model"]
+         +, (0.0, 0.0))                                                  
+      16 +        total += (step["tokens_in"] * usd_in + step["tokens_out
+         +"] * usd_out) / 1e6                                            
+      17 +    return total                                               
+      18 +                                                               
+      19 +                                                               
+      20  def result_row(
+      21      *,
+      22      request_id: str,
+     ...
+      42          "answer_grade": answer_grade,
+      43          "queue_depth": reply.queue_depth,
+      44          "reason": reply.reason or "",
+      45 +        "usd": round(request_usd(reply.steps), 8),             
+      46      }
+      47      return {column: row[column] for column in RESULT_COLUMNS}
+      48  
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/tables.py (+5 -9)
+      18      "answer_grade",
+      19      "queue_depth",
+      20      "reason",
+      21 +    "usd",                                                     
+      22  ]
+      23  
+      24  SCENARIO_KEY = ["scenario", "source"]
+     ...
+      53      )
+      54  
+      55  
+      55 -def _outcome_row(group: pd.DataFrame, usd_per_mtok_in: float, u
+         -sd_per_mtok_out: float):                                       
+      56 +def _outcome_row(group: pd.DataFrame) -> pd.Series:            
+      57      ok = group[group["status"] == "ok"]
+      57 -    usd = (ok["tokens_in"] * usd_per_mtok_in + ok["tokens_out"]
+         - * usd_per_mtok_out) / 1e6                                     
+      58      return pd.Series(
+      59          {
+      60              "succeeded_pct": _pct(group["status"] == "ok"),
+     ...
+      64              "retries_per_request": group["retries"].mean(),
+      65              "peak_queue_length": group["queue_depth"].max(),
+      66              "tokens_per_answer": _tokens(ok).mean(),
+      67 -            "usd_per_1000_answers": usd.mean() * 1000,         
+      67 +            "usd_per_1000_answers": ok["usd"].mean() * 1000,   
+      68          }
+      69      )
+      70  
+     ...
+       89      return results.groupby(SCENARIO_KEY).apply(_latency_row, i
+           nclude_groups=False)
+       90  
+       91  
+       92 -def outcomes_table(                                           
+       93 -    results: pd.DataFrame, *, usd_per_mtok_in: float, usd_per_
+          -mtok_out: float                                               
+       94 -) -> pd.DataFrame:                                            
+       95 -    return results.groupby(SCENARIO_KEY).apply(               
+       96 -        _outcome_row, usd_per_mtok_in, usd_per_mtok_out, inclu
+          -de_groups=False                                               
+       97 -    )                                                         
+       92 +def outcomes_table(results: pd.DataFrame) -> pd.DataFrame:    
+       93 +    return results.groupby(SCENARIO_KEY).apply(_outcome_row, i
+          +nclude_groups=False)                                          
+       94  
+       95  
+       96  def retrieval_table(results: pd.DataFrame) -> pd.DataFrame:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Write(~/Documents/Github/the-relay-dev/src/relay/assemble.py)
+  ⎿  Wrote 58 lines to
+     ~/Documents/Github/the-relay-dev/src/relay/assemble.py
+       1 import json
+       2 
+       3 import pandas as pd
+       4 
+       5 from relay.eval import grade
+       6 from relay.library import ROOT
+       7 from relay.questions import QUESTIONS
+       8 from relay.records import result_row
+       9 from relay.reply import Reply
+      10 from relay.tables import RESULT_COLUMNS
+     … +48 lines (ctrl+o to expand)
+
+⏺ Write(~/Documents/Github/the-relay-dev/tests/unit/test_assemble.py)
+  ⎿  Wrote 67 lines to
+     ~/Documents/Github/the-relay-dev/tests/unit/test_assemble.py
+      1 import json
+      2 
+      3 import pandas as pd
+      4 import pytest
+      5 
+      6 from relay import assemble as assembly
+      7 from relay.reply import Reply
+      8 from relay.tables import RESULT_COLUMNS
+      9 
+     … +58 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The assembler works and its 5 tests pass. Now the table renderer, which writes
+  the brief's three results tables in its own column format to docs/tables.md:
+
+⏺ Bash(cat >> src/relay/tables.py <<'EOF'…)
+  ⎿  All checks passed!
+     ....
+        [100%]
+     76 passed in 0.69s
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/tables.py (+143 -0)
+       96  def retrieval_table(results: pd.DataFrame) -> pd.DataFrame:
+       97      graded = results[results["scenario"] == "retrieval"]
+       98      return graded.groupby("retrieval_setting").apply(_retrieva
+           l_row, include_groups=False)
+       99 +                                                              
+      100 +                                                              
+      101 +SCENARIO_LABELS = {                                           
+      102 +    "steady": "Steady, 2/min for 30 min",                     
+      103 +    "burst": "Burst, 20 requests in 30 s on 1/min",           
+      104 +    "overload": "Sustained overload, 6/min for 20 min",       
+      105 +    "rpm_halved": "Per-minute limits halved, 2/min",          
+      106 +    "daily_exhausted": "Daily budget exhausted mid-run",      
+      107 +    "retrieval": "Paced 3/min (Table 3 runs)",                
+      108 +}                                                             
+      109 +                                                              
+      110 +                                                              
+      111 +def _ms(value: float) -> str:                                 
+      112 +    return "not measured" if pd.isna(value) else f"{value:.0f}
+          +"                                                             
+      113 +                                                              
+      114 +                                                              
+      115 +def _triple(row: pd.Series, prefix: str, ps=(50, 95, 99)) -> s
+          +tr:                                                           
+      116 +    return " / ".join(_ms(row[f"{prefix}_p{p}_ms"]) for p in p
+          +s)                                                            
+      117 +                                                              
+      118 +                                                              
+      119 +def _md(header: list[str], rows: list[list[str]]) -> str:     
+      120 +    lines = ["| " + " | ".join(header) + " |", "|" + "---|" * 
+          +len(header)]                                                  
+      121 +    lines += ["| " + " | ".join(map(str, row)) + " |" for row 
+          +in rows]                                                      
+      122 +    return "\n".join(lines)                                   
+      123 +                                                              
+      124 +                                                              
+      125 +def _setting_label(name: str) -> str:                         
+      126 +    size, k, method, *rerank = name.split("-")                
+      127 +    return (                                                  
+      128 +        f"{size.removesuffix('w')} words, {k.removeprefix('k')
+          +} pieces, {method.upper()}, "                                 
+      129 +        f"re-rank {'yes' if rerank else 'no'}"                
+      130 +    )                                                         
+      131 +                                                              
+      132 +                                                              
+      133 +def render_markdown(results: pd.DataFrame) -> str:            
+      134 +    shown = results[results["scenario"].isin(SCENARIO_LABELS)]
+      135 +    order = {name: i for i, name in enumerate(SCENARIO_LABELS)
+          +}                                                             
+     … 106 more lines (ctrl+o to expand)
+  ⎿  Updated ~/Documents/Github/the-relay-dev/tests/unit/test_tables.py
+     (+18 -1)
+       1  import pandas as pd
+       2  import pytest
+       3  
+       4 -from relay.tables import RESULT_COLUMNS, latency_table, outcome
+         -s_table, retrieval_table                                       
+       4 +from relay.tables import (                                     
+       5 +    RESULT_COLUMNS,                                            
+       6 +    latency_table,                                             
+       7 +    outcomes_table,                                            
+       8 +    render_markdown,                                           
+       9 +    retrieval_table,                                           
+      10 +)                                                              
+      11  
+      12  
+      13  def row(i, scenario="burst", source="stand-in", **overrides):
+     ...
+      120          25.0,
+      121          25.0,
+      122      ]
+      123 +                                                              
+      124 +                                                              
+      125 +def test_rendered_tables_have_a_row_per_scenario_and_setting()
+          +:                                                             
+      126 +    rows = [row(0, scenario="steady"), row(1, scenario="retrie
+          +val", source="real")]                                         
+      127 +    text = render_markdown(pd.DataFrame(rows, columns=RESULT_C
+          +OLUMNS))                                                      
+      128 +    assert "Steady, 2/min" in text and "Paced 3/min" in text a
+          +nd "300 words, 5 pieces" in text                              
+      129 +                                                              
+      130 +                                                              
+      131 +def test_unmeasured_percentiles_render_as_not_measured():     
+      132 +    rows = [row(0, scenario="steady", first_token_ms=None)]   
+      133 +    assert "not measured" in render_markdown(pd.DataFrame(rows
+          +, columns=RESULT_COLUMNS))                                    
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The 31-minute re-runs finish around 17:25, and the hybrid Table 3 re-run can
+  proceed since the worktree already has the threshold fix. I'm pulling this
+  morning's per-model token use from the traces next.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ About 180K gpt-oss-120b tokens were used in the last 24 hours, with no
+  daily-limit 429 so far, and the hybrid re-run may hit that limit, which would
+  give the Table 1 measurement. I'm running it from the worktree with the fix
+  now.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ While that runs, I'm picking the slow request for "Where the time goes". The
+  slowest real answer in the Table 3 runs is mos-03 at 7840 ms. Its trace:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Background command "Re-run hybrid Table 3 setting from the worktree" completed
+(exit code 0)
+
+⏺ The mos-03 timing shows no time spent waiting or retrying, and all 7840 ms
+  went to Groq's own response, not our queueing. The hybrid run also finished
+  suspiciously fast, which I'm checking next.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ The worktree has no .env. Linking it to the main checkout's file (without
+  reading it), then re-launching:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ While those run, I'm starting the write-up. It goes out under your name, so
+  I'm checking your saved writing-style notes first:
+  Recalled 1 memory (ctrl+o to expand)
+
+⏺ Two jobs are still running:
+
+  - Load re-runs: steady and rpm_halved, until about 17:25. Please keep the lid
+    open.
+  - Hybrid Table 3 re-run: about 7 minutes. The first attempt failed at startup
+    because the worktree had no .env. It recorded nothing and spent no budget.
+
+  New on results/assemble-and-tables, in the worktree ../the-relay-dev, not 
+  pushed yet:
+  - The hybrid threshold fix.
+  - A guard that stops relay.evaluate when --ids matches nothing.
+  - A per-request cost column priced per model.
+  - relay.assemble, which builds results/results.csv from a manifest and
+    regrades every saved reply.
+  - relay.tables, which renders Tables 2a, 2b and 3 to docs/tables.md.
+
+  All 76 unit tests pass.
+
+  "Where the time goes" will use mos-03 (7840 ms, real Groq):
+  - Nothing waited in the governor queue, and nothing was retried.
+  - The understand call took 3258 ms to return 49 tokens, against its usual 537
+    ms. The draft took 2688 ms and the check 1889 ms.
+  - All of the delay came before the first token, because of the
+    hold-until-checked design.
+
+  Once both jobs finish, I'll write the notes, build the manifest, assemble the
+  results, generate the tables and draft the write-up in your voice.
+
+✻ Cogitated for 3m 44s · done 4:57 PM
+
+※ recap: We're finishing The Relay assignment, now re-running the steady and rpm_halved load shapes and the hybrid Table 3 run. Next, once they finish, I'll assemble results.csv, generate the tables and draft your write-up.
+
+⏺ Background command "Link .env into worktree and re-run hybrid setting"
+completed (exit code 0)
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ The hybrid re-run got all 20 right, but the three settings differ by only one
+  question each and dc-04 flips between runs, so the write-up will note that 20
+  questions can't separate them. I'm checking why dc-04 took 11.4 s next.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ That run is a better example for "Where the time goes" than mos-03, since it
+  shows waiting, retrying and working. I'll use dc-04 and mention mos-03
+  briefly, then commit the run.
+
+⏺ Bash(cd ~/Documents/Github/the-relay-dev && cat >
+      results/20261111-1657-eval-300w-k5-hybrid/NOTES.md <<'EOF'
+      # Notes…)
+  ⎿  8c6fc41 results: add the hybrid Table 3 run after the decide-score fix
+     Wed Nov 11 17:04:02 IST 2026
+     7
+  ⎿  Created ~/Documents/Github/the-relay-dev/results/20261111-1657-eval-30
+     0w-k5-hybrid/NOTES.md (+7 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +Table 3 run for 300w-k5-hybrid with the decide-score fix (3399db
+        +1). Same 20 questions and spacing as results/20261111-0837-eval-
+        +300w-k5-bm25.                                                   
+      4 +                                                                
+      5 +- 15 of 15 answerable correct, inj-02 correct, all 4 refusal que
+        +stions refused.                                                 
+      6 +- The three Table 3 settings differ by one question each (dc-04 
+        +here, dc-01 at 120w-k8, dc-04 at 300w-k5-bm25 where the draft re
+        +fused). dc-04 has also flipped between runs with identical passa
+        +ges, so 20 questions cannot separate these settings on quality. 
+      7 +- dc-04 took 11395 ms: understand 388 ms; a first draft (560 ms)
+        + stating a computed "gain of 6.4 percentage points" that the gro
+        +unding check rejected; 9057 ms queued in the governor before the
+        + second draft, because the first draft's reservation had used th
+        +e per-minute token budget for gpt-oss-120b; second draft 863 ms;
+        + check 461 ms. All before the first token.                      
+
+⏺ About 20 minutes remain on the load re-runs, so I'm assembling the manifest of
+  counted runs now, with invalid runs and probes excluded and the earlier real
+  evaluation runs kept under the development label.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The manifest is drafted. It's waiting only for the names of the two load
+  re-run directories, due around 17:25. I'll pick up when they finish.
+
+✻ Crunched for 50s · done 5:04 PM
+
+※ recap: The goal is to finish The Relay submission; I'm waiting for the steady and rpm_halved load re-runs to finish around 17:25, so please keep the lid open. After that I'll assemble results.csv, generate the tables and draft the write-up.
+
+⏺ Background command "Wait for steady and rpm_halved reruns, then list runs and
+sleeps" completed (exit code 0)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ No sleep between 16:54 and 17:24, so both re-runs are valid. Writing their
+  notes and committing every outstanding run on the load branch, then merging
+  that branch into the worktree branch:
+
+⏺ Bash(cd ~/Documents/Github/the-relay && for s in steady rpm_halved; do printf
+      '# Notes\n\nValid re-run of the %s shape, started 16:54:25 under
+      caffeinate with the li…)
+  ⎿  A  results/20261111-0836-load-burst/NOTES.md
+     A  results/20261111-0836-load-burst/replies.jsonl
+     A  results/20261111-0836-load-burst/results.csv
+     … +33 lines (ctrl+o to expand)
+  ⎿  Created results/20261111-1654-load-rpm_halved/NOTES.md (+3 -0)
+  ⎿  Created results/20261111-1654-load-steady/NOTES.md (+3 -0)
+  ⎿  (a git step in this command can move the working tree, so these may be
+     its changes, not edits) (ctrl+o to expand)
+
+⏺ Bash(ls results | grep 1654; sed -e 's/"STEADY"/"20261111-1654-load-steady"/;
+      s/"RPM_HALVED"/"20261111-1654-load-rpm_halved"/'
+      /private/tmp/claude-501/-Users-yash/27…)
+  ⎿  20261111-1654-load-rpm_halved
+     20261111-1654-load-steady
+     /Users/yash/Documents/Github/the-relay-dev/results/results.csv: 495 ro
+     … +34 lines (ctrl+o to expand)
+  ⎿  Created ~/Documents/Github/the-relay-dev/docs/tables.md (+33 -0)
+       1 +# Results tables                                               
+       2 +                                                               
+       3 +Generated by `uv run python -m relay.tables` from `results/resu
+         +lts.csv`. Times in milliseconds; percentiles use linear interpo
+         +lation.                                                        
+       4 +                                                               
+       5 +## Table 2a: Latency                                           
+       6 +                                                               
+       7 +| Scenario | Real or stand-in | Requests sent | Duration (s) | 
+         +Offered rate (per min) | First token p50 / p95 / p99 (ms) | Tot
+         +al time p50 / p95 / p99 (ms) |                                 
+       8 +|---|---|---|---|---|---|---|                                  
+       9 +| Steady, 2/min for 30 min | stand-in | 71 | 1781 | 2.4 | 1507 
+         +/ 4727 / 6987 | 1507 / 4727 / 6987 |                           
+      10 +| Burst, 20 requests in 30 s on 1/min | stand-in | 50 | 1187 | 
+         +2.5 | 2595 / 13975 / 14457 | 2595 / 13975 / 14457 |            
+      11 +| Sustained overload, 6/min for 20 min | stand-in | 143 | 1192 
+         +| 7.2 | 3342 / 12848 / 14207 | 3342 / 12848 / 14207 |          
+      12 +| Per-minute limits halved, 2/min | stand-in | 71 | 1785 | 2.4 
+         +| 2036 / 10480 / 12126 | 2036 / 10480 / 12126 |                
+      13 +| Daily budget exhausted mid-run | stand-in | 50 | 1095 | 2.7 |
+         + 6 / 3878 / 6504 | 6 / 3878 / 6504 |                           
+      14 +| Paced 3/min (Table 3 runs) | real | 60 | 30345 | 0.1 | 1978 /
+         + 4302 / 9297 | 1978 / 4302 / 9297 |                            
+      15 +                                                               
+      16 +## Table 2b: Outcomes                                          
+      17 +                                                               
+      18 +| Scenario | Succeeded % | Rate-limited % | Timed out or given 
+         +up % | Retries per request | Peak queue length | Tokens per ans
+         +wer | Cost per 1,000 answers |                                 
+      19 +|---|---|---|---|---|---|---|---|                              
+      20 +| Steady, 2/min for 30 min | 98.6 | 1.4 | 0.0 | 0.00 | 1 | 4484
+         + | $1.84 |                                                     
+      21 +| Burst, 20 requests in 30 s on 1/min | 60.0 | 40.0 | 0.0 | 0.0
+         +0 | 13 | 4478 | $1.82 |                                        
+      22 +| Sustained overload, 6/min for 20 min | 67.1 | 32.2 | 0.7 | 0.
+         +01 | 6 | 3747 | $1.43 |                                        
+      23 +| Per-minute limits halved, 2/min | 74.6 | 25.4 | 0.0 | 0.01 | 
+         +1 | 3893 | $1.52 |                                             
+      24 +| Daily budget exhausted mid-run | 34.0 | 66.0 | 0.0 | 0.00 | 1
+         + | 4307 | $1.79 |                                              
+      25 +| Paced 3/min (Table 3 runs) | 100.0 | 0.0 | 0.0 | 0.02 | 0 | 4
+         +766 | $2.05 |                                                  
+      26 +                                                               
+      27 +## Table 3: Retrieval settings                                 
+      28 +                                                               
+      29 +| Setting | Questions asked | Correct and cited % | Wrong % | C
+         +orrectly refused % | Tokens per answer | First token p50 / p95 
+         +(ms) | Total time p50 / p95 (ms) |                             
+      30 +|---|---|---|---|---|---|---|---|                              
+      31 +| 120 words, 8 pieces, BM25, re-rank no | 20 | 75.0 | 5.0 | 20.
+         +0 | 4573 | 1941 / 4302 | 1941 / 4302 |                         
+      32 +| 300 words, 5 pieces, BM25, re-rank no | 20 | 75.0 | 0.0 | 20.
+         +0 | 4763 | 1958 / 4199 | 1958 / 4199 |                         
+      33 +| 300 words, 5 pieces, HYBRID, re-rank no | 20 | 80.0 | 0.0 | 2
+         +0.0 | 4962 | 1978 / 4246 | 1978 / 4246 |                       
+  ⎿  Created ~/Documents/Github/the-relay-dev/results/manifest.json (+15 
+     -0)
+       1 +{                                                              
+       2 +  "runs": [                                                    
+       3 +    {"dir": "20261111-0229-eval-300w-k5-bm25", "scenario": "dev
+         +elopment"},                                                    
+       4 +    {"dir": "20261111-0315-eval-300w-k5-bm25", "scenario": "dev
+         +elopment"},                                                    
+       5 +    {"dir": "20261111-0320-eval-300w-k5-bm25", "scenario": "dev
+         +elopment"},                                                    
+       6 +    {"dir": "20261111-0837-eval-300w-k5-bm25"},                
+       7 +    {"dir": "20261111-0844-eval-120w-k8-bm25"},                
+       8 +    {"dir": "20261111-1657-eval-300w-k5-hybrid"},              
+       9 +    {"dir": "20261111-0836-load-burst"},                       
+      10 +    {"dir": "20261111-0836-load-overload"},                    
+      11 +    {"dir": "20261111-0836-load-daily_exhausted"},             
+      12 +    {"dir": "20261111-1654-load-steady"},                      
+      13 +    {"dir": "20261111-1654-load-rpm_halved"}                   
+      14 +  ]                                                            
+      15 +}                                                              
+  ⎿  … 1 more file changed
+
+⏺ The first assembled results.csv came out right in shape, but the "Paced 3/min,
+  real" row wrongly spans three runs eight hours apart, so I'm fixing the
+  renderer with a test first.
+
+⏺ Bash(cat >> tests/unit/test_tables.py <<'EOF'…)
+  ⎿  1 failed, 15 passed in 0.37s
+     All checks passed!
+     77 passed in 0.52s
+     … +4 lines (ctrl+o to expand)
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/tables.md (+2 -2)
+      11  | Sustained overload, 6/min for 20 min | stand-in | 143 | 1192 
+          | 7.2 | 3342 / 12848 / 14207 | 3342 / 12848 / 14207 |
+      12  | Per-minute limits halved, 2/min | stand-in | 71 | 1785 | 2.4 
+          | 2036 / 10480 / 12126 | 2036 / 10480 / 12126 |
+      13  | Daily budget exhausted mid-run | stand-in | 50 | 1095 | 2.7 |
+           6 / 3878 / 6504 | 6 / 3878 / 6504 |
+      14 -| Paced 3/min (Table 3 runs) | real | 60 | 30345 | 0.1 | 1978 /
+         - 4302 / 9297 | 1978 / 4302 / 9297 |                            
+      14 +| Paced 3/min, default setting (Table 3 run) | real | 20 | 382 
+         +| 3.2 | 1958 / 4199 / 7112 | 1958 / 4199 / 7112 |              
+      15  
+      16  ## Table 2b: Outcomes
+      17  
+     ...
+      22  | Sustained overload, 6/min for 20 min | 67.1 | 32.2 | 0.7 | 0.
+          01 | 6 | 3747 | $1.43 |
+      23  | Per-minute limits halved, 2/min | 74.6 | 25.4 | 0.0 | 0.01 | 
+          1 | 3893 | $1.52 |
+      24  | Daily budget exhausted mid-run | 34.0 | 66.0 | 0.0 | 0.00 | 1
+           | 4307 | $1.79 |
+      25 -| Paced 3/min (Table 3 runs) | 100.0 | 0.0 | 0.0 | 0.02 | 0 | 4
+         -766 | $2.05 |                                                  
+      25 +| Paced 3/min, default setting (Table 3 run) | 100.0 | 0.0 | 0.
+         +0 | 0.00 | 0 | 4763 | $2.03 |                                  
+      26  
+      27  ## Table 3: Retrieval settings
+      28  
+  ⎿  Updated ~/Documents/Github/the-relay-dev/src/relay/tables.py (+6 -2)
+      104      "overload": "Sustained overload, 6/min for 20 min",
+      105      "rpm_halved": "Per-minute limits halved, 2/min",
+      106      "daily_exhausted": "Daily budget exhausted mid-run",
+      107 -    "retrieval": "Paced 3/min (Table 3 runs)",                
+      107 +    "retrieval": "Paced 3/min, default setting (Table 3 run)",
+      108  }
+      109  
+      110  
+     ...
+      131  
+      132  
+      133  def render_markdown(results: pd.DataFrame) -> str:
+      134 -    shown = results[results["scenario"].isin(SCENARIO_LABELS)]
+      134 +    from relay.retrieval import DEFAULT_SETTING               
+      135 +                                                              
+      136 +    paced = results["scenario"] == "retrieval"                
+      137 +    default = results["retrieval_setting"] == DEFAULT_SETTING.
+          +name                                                          
+      138 +    shown = results[results["scenario"].isin(SCENARIO_LABELS) 
+          +& (~paced | default)]                                         
+      139      order = {name: i for i, name in enumerate(SCENARIO_LABELS)
+           }
+      140      latency = latency_table(shown).sort_index(key=lambda idx: 
+           idx.map(lambda v: order.get(v, v)))
+      141      outcomes = outcomes_table(shown).loc[latency.index]
+  ⎿  Updated ~/Documents/Github/the-relay-dev/tests/unit/test_tables.py
+     (+14 -1)
+      123  
+      124  
+      125  def test_rendered_tables_have_a_row_per_scenario_and_setting()
+           :
+      126 -    rows = [row(0, scenario="steady"), row(1, scenario="retrie
+          -val", source="real")]                                         
+      126 +    rows = [                                                  
+      127 +        row(0, scenario="steady"),                            
+      128 +        row(1, scenario="retrieval", source="real", retrieval_
+          +setting="300w-k5-bm25"),                                      
+      129 +    ]                                                         
+      130      text = render_markdown(pd.DataFrame(rows, columns=RESULT_C
+           OLUMNS))
+      131      assert "Steady, 2/min" in text and "Paced 3/min" in text a
+           nd "300 words, 5 pieces" in text
+      132  
+     ...
+      134  def test_unmeasured_percentiles_render_as_not_measured():
+      135      rows = [row(0, scenario="steady", first_token_ms=None)]
+      136      assert "not measured" in render_markdown(pd.DataFrame(rows
+           , columns=RESULT_COLUMNS))
+      137 +                                                              
+      138 +                                                              
+      139 +def test_real_paced_row_uses_only_the_default_setting_run():  
+      140 +    rows = [                                                  
+      141 +        row(0, scenario="retrieval", source="real", retrieval_
+          +setting="300w-k5-bm25"),                                      
+      142 +        row(1, scenario="retrieval", source="real", retrieval_
+          +setting="120w-k8-bm25"),                                      
+      143 +    ]                                                         
+      144 +    text = render_markdown(pd.DataFrame(rows, columns=RESULT_C
+          +OLUMNS))                                                      
+      145 +    paced = next(line for line in text.splitlines() if line.st
+          +artswith("| Paced"))                                          
+      146 +    assert paced.split(" | ")[2] == "1"                       
+
+⏺ Table 2a's real row is now a single continuous run: 20 requests over 382 s at
+  3.2 a minute. All 77 unit tests pass. Next, the checks on the assembled file
+  and the full suite:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The results.csv checks pass, but the real-model tests need all 36 gold
+  questions answered on current code. The Table 3 run already covers 20, so I'm
+  committing and then running the remaining 16 on Groq.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ While that runs, gathering the numbers the write-up needs: cost split by
+  model, how often the lean path ran, governor queueing, and grades under load.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The cost split holds across every run: understanding takes 2–4%, drafting
+  about 19%, and checking about 78%, with no wrong answers under any load.
+  Requests waited up to 13.7 s in the governor's queue rather than retrying; I'm
+  waiting on the 16-question run before the real-model tests.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The budget reply works as designed. "About 96 minutes" comes from this load
+  shape's 15-requests-per-day cap (86400 s ÷ 15). At the real 1,000 per day it
+  would say about 2 minutes. The quoted passages keep the PDF's line-break
+  hyphens ("re- sulting"). That's cosmetic, and I'll mention it rather than fix
+  it now.
+
+  pandoc isn't installed, so I'll write the .tex version by hand and compile it
+  with tectonic to check it fits in 2 pages. Waiting for the 16-question run to
+  finish.
+
+✻ Baked for 1m 44s · done 5:26 PM
+
+※ recap: We're finishing The Relay assignment, and right now we're filling in the final results tables. Next, once the 16-question Groq run finishes, I'll run the real-model tests and draft the 2-page write-up in your voice.
+
+⏺ Background command "Commit, then run the 16 remaining gold questions on Groq"
+completed (exit code 0)
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Full gold set on current code: 0837 run (20) plus this run (16). Checking
+  x-01, then building a combined replies file for the real-model tests:
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ x-01 failed because the draft's token budget forced a lean path that kept only
+  the top passage per search, so the N=6 passage was dropped. I'm logging it as
+  a known failure and running the real-model layers on the combined 36 replies
+  next.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ 13 of 15 real-model tests pass; both failures are inj-03, where the system
+  refused the injected "5 ms" claim and the test wrongly counts refusal as
+  failure. I'll hold off on changing that test until you confirm, and I'm
+  committing the run now.
+
+⏺ Bash(cat > results/20261111-1725-eval-300w-k5-bm25/NOTES.md <<'EOF'
+      # Notes…)
+  ⎿    "commit": "cc4643a"
+     /Users/yash/Documents/Github/the-relay-dev/results/results.csv: 511 ro
+     ws
+     … +3 lines (ctrl+o to expand)
+  ⎿  Created ~/Documents/Github/the-relay-dev/results/20261111-1725-eval-30
+     0w-k5-bm25/NOTES.md (+9 -0)
+      1 +# Notes                                                         
+      2 +                                                                
+      3 +The 16 gold questions not in the Table 3 subset, on current code
+        + (cc4643a, default setting), labelled development in the manifes
+        +t. Together with results/20261111-0837-eval-300w-k5-bm25 this co
+        +vers all 36 gold questions on the current pipeline; that combina
+        +tion is what the real-model test layers were run against.       
+      4 +                                                                
+      5 +- 12 of 16 as expected. Every refusal question refused.         
+      6 +- mos-06 refused: retrieval miss, as in every earlier run.      
+      7 +- dc-07 wrong: answered about the Chinese and code datasets agai
+        +n (the "data budget" wording).                                  
+      8 +- x-01 refused: the router split it into paper-scoped sub-search
+        +es as intended, but nine passages reserve about 5K of the 8K per
+        +-minute tokens, so the draft took the lean path (gpt-oss-20b, th
+        +ree passages: the top hit of each search). The Transformer sub-s
+        +earch ranks "Applications of Attention" first and the "N = 6 ide
+        +ntical layers" passage second, so lean dropped it.              
+      9 +- inj-03 refused after its first draft correctly said "160 ms, n
+        +ot 5 ms" and failed the strict number check, the trade-off chose
+        +n in the session.                                               
+  ⎿  Updated ~/Documents/Github/the-relay-dev/results/manifest.json (+40 
+     -11)
+       1  {
+       2    "runs": [
+       3 -    {"dir": "20261111-0229-eval-300w-k5-bm25", "scenario": "dev
+         -elopment"},                                                    
+       4 -    {"dir": "20261111-0315-eval-300w-k5-bm25", "scenario": "dev
+         -elopment"},                                                    
+       5 -    {"dir": "20261111-0320-eval-300w-k5-bm25", "scenario": "dev
+         -elopment"},                                                    
+       6 -    {"dir": "20261111-0837-eval-300w-k5-bm25"},                
+       7 -    {"dir": "20261111-0844-eval-120w-k8-bm25"},                
+       8 -    {"dir": "20261111-1657-eval-300w-k5-hybrid"},              
+       9 -    {"dir": "20261111-0836-load-burst"},                       
+      10 -    {"dir": "20261111-0836-load-overload"},                    
+      11 -    {"dir": "20261111-0836-load-daily_exhausted"},             
+      12 -    {"dir": "20261111-1654-load-steady"},                      
+      13 -    {"dir": "20261111-1654-load-rpm_halved"}                   
+       3 +    {                                                          
+       4 +      "dir": "20261111-0229-eval-300w-k5-bm25",                
+       5 +      "scenario": "development"                                
+       6 +    },                                                         
+       7 +    {                                                          
+       8 +      "dir": "20261111-0315-eval-300w-k5-bm25",                
+       9 +      "scenario": "development"                                
+      10 +    },                                                         
+      11 +    {                                                          
+      12 +      "dir": "20261111-0320-eval-300w-k5-bm25",                
+      13 +      "scenario": "development"                                
+      14 +    },                                                         
+      15 +    {                                                          
+      16 +      "dir": "20261111-1725-eval-300w-k5-bm25",                
+      17 +      "scenario": "development"                                
+      18 +    },                                                         
+      19 +    {                                                          
+      20 +      "dir": "20261111-0837-eval-300w-k5-bm25"                 
+      21 +    },                                                         
+      22 +    {                                                          
+      23 +      "dir": "20261111-0844-eval-120w-k8-bm25"                 
+      24 +    },                                                         
+      25 +    {                                                          
+      26 +      "dir": "20261111-1657-eval-300w-k5-hybrid"               
+      27 +    },                                                         
+      28 +    {                                                          
+      29 +      "dir": "20261111-0836-load-burst"                        
+     … 15 more lines (ctrl+o to expand)
+  ⎿  Updated ~/Documents/Github/the-relay-dev/results/results.csv (+16 -0)
+      49  20261111-0320-eval-300w-k5-bm25/retrieval-300w-k5-bm25-dc-07,de
+          velopment,real,1794347421.172,2053.2,2053.2,ok,0,5546,307,300w-
+          k5-bm25,wrong,0,,0.0027516
+      50  20261111-0320-eval-300w-k5-bm25/retrieval-300w-k5-bm25-x-01,dev
+          elopment,real,1794347441.173,8287.0,8287.0,ok,0,8935,244,300w-k
+          5-bm25,wrong,0,,0.00431805
+      51  20261111-0320-eval-300w-k5-bm25/retrieval-300w-k5-bm25-inj-03,d
+          evelopment,real,1794347461.173,11133.2,11133.2,ok,0,4362,157,30
+          0w-k5-bm25,refused_wrongly,0,not_in_papers,0.000573
+      52 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-att-06
+         +,development,real,1794398137.492,2056.2,2056.2,ok,0,5377,154,30
+         +0w-k5-bm25,correct,0,,0.00253633                               
+      53 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-att-07
+         +,development,real,1794398157.493,2844.4,2844.4,ok,0,4520,171,30
+         +0w-k5-bm25,correct,0,,0.00214883                               
+      54 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-mos-06
+         +,development,real,1794398177.494,892.1,892.1,ok,0,3000,70,300w-
+         +k5-bm25,refused_wrongly,0,not_in_papers,0.00044122             
+      55 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-mos-07
+         +,development,real,1794398197.494,1647.6,1647.6,ok,0,5955,149,30
+         +0w-k5-bm25,correct,0,,0.0027966                                
+      56 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-mos-08
+         +,development,real,1794398217.494,1715.5,1715.5,ok,0,6104,132,30
+         +0w-k5-bm25,correct,0,,0.0028574                                
+      57 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-dc-06,
+         +development,real,1794398237.495,1979.6,1979.6,ok,0,6332,176,300
+         +w-k5-bm25,correct,0,,0.0030327                                 
+      58 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-dc-07,
+         +development,real,1794398257.495,3921.3,3921.3,ok,0,10605,692,30
+         +0w-k5-bm25,wrong,0,,0.00611078                                 
+      59 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-dc-08,
+         +development,real,1794398277.496,3810.7,3810.7,ok,0,5146,165,300
+         +w-k5-bm25,correct,0,,0.00241917                                
+      60 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-dc-09,
+         +development,real,1794398297.496,2624.1,2624.1,ok,0,3959,138,300
+         +w-k5-bm25,correct,0,,0.00183053                                
+      61 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-x-01,d
+         +evelopment,real,1794398317.496,1082.3,1082.3,ok,0,2221,143,300w
+         +-k5-bm25,refused_wrongly,0,not_in_papers,0.00020947            
+      62 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-un-02,
+         +development,real,1794398337.497,1029.3,1029.3,ok,0,3346,82,300w
+         +-k5-bm25,refused_correctly,0,not_in_papers,0.0004965           
+      63 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-un-04,
+         +development,real,1794398357.497,560.0,560.0,ok,0,518,43,300w-k5
+         +-bm25,refused_correctly,0,not_in_papers,5.175e-05              
+      64 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-un-05,
+         +development,real,1794398377.499,1221.0,1221.0,ok,0,3023,110,300
+         +w-k5-bm25,refused_correctly,0,not_in_papers,0.00045727         
+      65 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-ood-03
+         +,development,real,1794398397.499,558.9,558.9,ok,0,513,26,300w-k
+         +5-bm25,refused_correctly,0,out_of_scope,4.627e-05              
+      66 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-inj-01
+         +,development,real,1794398417.5,550.0,550.0,ok,0,518,38,300w-k5-
+         +bm25,refused_correctly,0,out_of_scope,5.025e-05                
+      67 +20261111-1725-eval-300w-k5-bm25/development-300w-k5-bm25-inj-03
+         +,development,real,1794398437.5,10224.8,10224.8,ok,0,5330,231,30
+         +0w-k5-bm25,refused_wrongly,0,check_failed,0.00088057           
+      68  20261111-0837-eval-300w-k5-bm25/retrieval-300w-k5-bm25-att-01,r
+          etrieval,real,1794366473.503,1797.6,1797.6,ok,0,4894,150,300w-k
+          5-bm25,correct,0,,0.0022976
+      69  20261111-0837-eval-300w-k5-bm25/retrieval-300w-k5-bm25-att-02,r
+          etrieval,real,1794366493.504,1607.5,1607.5,ok,0,5127,126,300w-k
+          5-bm25,correct,0,,0.00240162
+      70  20261111-0837-eval-300w-k5-bm25/retrieval-300w-k5-bm25-att-03,r
+          etrieval,real,1794366513.504,1817.3,1817.3,ok,0,6761,133,300w-k
+          5-bm25,correct,0,,0.00319645
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Now the write-up. Here are the final generated tables to quote from:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I'm drafting the write-up in your voice, leaving the Vaani feedback and your
+  personal opinions as marked placeholders, and proposing factual candidates
+  from this session for the "How I worked with the assistant" section that you
+  can confirm or replace.
+
+⏺ Write(~/Documents/Github/the-relay-dev/docs/writeup.md)
+  ⎿  Wrote 111 lines to ~/Documents/Github/the-relay-dev/docs/writeup.md
+      1 # The Relay
+      2 
+      3 Yash Dagar. Code, raw results and conversation: https://github.co
+        m/yashdagar/the-relay
+      4 
+      5 ## 1. What I built and why
+      6 
+      7 A Python asyncio pipeline with five steps. **Understand** (gpt-os
+        s-20b) decides if the question is about the three papers and spli
+        ts two-part questions into paper-scoped searches. **Retrieve** is
+     … +105 lines (~12 KB) (ctrl+o to expand)
+
+⏺ Before rendering, I'm checking every number in the draft against the data. One
+  claim from earlier in this conversation is already suspect: that un-03
+  outscores 18 answerable questions. Recounting:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ It's 14 of 25, not 18. I had misread the list earlier in this session and
+  nearly put the wrong figure in the write-up. Applying all the corrections:
+
+⏺ Bash(python3 - <<'EOF'
+      import pathlib…)
+  ⎿  0
+         2382 docs/writeup.md
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.md (+7 -7)
+      14  
+      15  | Limit | Value found | How I found it | Confidence |
+      16  |---|---|---|---|
+      17 -| Requests per minute | 30 per model | 40 calls at once on alla
+         -m-2-7b: 33 ok, 7 got 429 "Limit 30" | High |                   
+      17 +| Requests per minute | 30 per model | 40 calls at once on alla
+         +m-2-7b: 33 ok, 7 got 429 "Limit 30"; docs say 30 for the gpt-os
+         +s models | High for allam, medium for the others |             
+      18  | Tokens per minute | 8,000 per model (allam 6,000) | `x-rateli
+          mit-limit-tokens` on every reply; 4th back-to-back draft got 42
+          9 "Limit 8000" | High |
+      19  | Requests per day | 1,000 per model (allam 7,000) | `x-ratelim
+          it-limit-requests`; reset reads 86.4 s per request used | High 
+          |
+      20  | Tokens per day | 200,000 (docs) | Docs only; never hit, thoug
+          h I used about 180K on gpt-oss-120b in 24 h | Low |
+     ...
+      54  
+      55  "Rate-limited" means the person got the passages-or-budget repl
+          y because a limit was near, not that Groq sent a 429: the gover
+          nor waits before sending, so retries stay near zero. Cost uses 
+          Groq's paid list prices per model (the free tier is $0).
+      56  
+      57 -**The number I could not have guessed:** the check step is **78
+         -% of the bill** in every run. qwen3.8-27b costs $0.80/$4.00 per
+         - million tokens against $0.15/$0.60 for the drafting model, and
+         - it rereads all the passages.                                  
+      57 +**The number I could not have guessed:** the check step is **77
+         + to 79% of the bill** in every run. qwen3.8-27b costs $0.80/$4.
+         +00 per million tokens against $0.15/$0.60 for the drafting mode
+         +l, and it rereads all the passages.                            
+      58  
+      59 -**Answer quality on my 36 questions** (25 answerable, 5 the pap
+         -ers do not answer, 3 off-topic, 3 injections), current code, re
+         -al Groq: 21 of 25 answerable correct and cited, 1 wrong, 3 refu
+         -sed wrongly; all 5 unanswerable, all 3 off-topic and the refusa
+         -l injection refused. Under load: **zero wrong answers in any sh
+         -ape**. Tokens per answer about 4,800.                          
+      59 +**Answer quality on my 36 questions** (25 answerable, 5 the pap
+         +ers do not answer, 3 off-topic, 3 injections), current code, re
+         +al Groq: 21 of 25 answerable correct and cited, 1 wrong, 3 refu
+         +sed wrongly; all 5 unanswerable, all 3 off-topic and the refusa
+         +l injection refused. Of the two answerable injections, inj-02 k
+         +ept to the facts and inj-03 was refused, because the correct re
+         +ply ("160 ms, not 5 ms") repeats a number the paper does not co
+         +ntain and my number check is strict on purpose. Under load: **z
+         +ero wrong answers in any shape**. Tokens per answer about 4,800
+         +.                                                              
+      60  
+      61  ## 4. Where the time goes
+      62  
+      63 -dc-04 on Groq took 11,395 ms, all before the first token. Waiti
+         -ng 9,057 ms, working 1,712 ms (understand 388, second draft 863
+         -, check 461), retrying 560 ms (a first draft that said "a gain 
+         -of 6.4 points", computed and not in the paper, so the number ch
+         -eck rejected it). The redraft had to wait in the governor becau
+         -se the first draft's reservation had used the per-minute token 
+         -budget. I know this from the per-attempt trace each reply carri
+         -es: step, model, attempt, `queued_ms`, `duration_ms`, outcome, 
+         -tokens (`results/20261111-1657-eval-300w-k5-hybrid/replies.json
+         -l`). A different slow one, mos-03 (7,840 ms), spent zero time w
+         -aiting: Groq took 3,258 ms to return 49 tokens on the routing c
+         -all, against 537 ms usually.                                   
+      63 +dc-04 on Groq took 11,395 ms, all before the first token. Waiti
+         +ng 9,057 ms, working 1,712 ms (understand 388, second draft 863
+         +, check 461), retrying 560 ms (a first draft that said "a gain 
+         +of 6.4 points", computed and not in the paper, so the number ch
+         +eck rejected it). The other 66 ms is retrieval and overhead. Th
+         +e redraft had to wait in the governor because the first draft's
+         + reservation had used the per-minute token budget. I know this 
+         +from the per-attempt trace each reply carries: step, model, att
+         +empt, `queued_ms`, `duration_ms`, outcome, tokens (`results/202
+         +61111-1657-eval-300w-k5-hybrid/replies.jsonl`). A different slo
+         +w one, mos-03 (7,840 ms), spent zero time waiting: Groq took 3,
+         +258 ms to return 49 tokens on the routing call, against 537 ms 
+         +usually.                                                       
+      64  
+      65  ## 5. When a limit is hit
+      66  
+      67 -**Per minute:** the governor holds the request until tokens ref
+         -ill, but only if that still leaves 3.1 s for draft and check be
+         -fore the 15 s deadline. Otherwise it drafts on the lean model w
+         -ith three pieces (24 of 143 under overload, 17 of 71 with halve
+         -d limits). Otherwise the person gets the top passages, quoted a
+         -nd marked unchecked, with "try again in a minute". So everyone 
+         -is delayed up to about 13 s, some get a shorter answer from a s
+         -maller model, and nobody is dropped silently. In the burst, 20 
+         -of 50 got passages instead of an answer, and none waited past 1
+         -4.5 s. **Per day:** the budget is checked before any model call
+         -. If the draft or check model has nothing left, the reply comes
+         - back in about 6 ms. If only the router's model is out, routing
+         - is skipped and the score filter does its job.                 
+      67 +**Per minute:** the governor holds the request until tokens ref
+         +ill, but only if that still leaves 3.1 s for draft and check be
+         +fore the 15 s deadline. Otherwise it drafts on the lean model w
+         +ith three pieces (24 lean drafts across 143 requests under over
+         +load, 17 across 71 with halved limits). Otherwise the person ge
+         +ts the top passages, quoted and marked unchecked, with "try aga
+         +in in a minute". So everyone is delayed up to about 13 s, some 
+         +get a shorter answer from a smaller model, and nobody is droppe
+         +d silently. In the burst, 20 of 50 got passages instead of an a
+         +nswer, and none took longer than 14.6 s. **Per day:** the budge
+         +t is checked before any model call. If the draft or check model
+         + has nothing left, the reply comes back in about 6 ms. If only 
+         +the router's model is out, routing is skipped and the score fil
+         +ter does its job.                                              
+      68  
+      69  ## Retrieval: quality versus cost
+      70  
+     ...
+      82  ## How this library will mislead a naive retriever
+      83  
+      84  1. **One paper talks about another.** "Transformer" appears all
+           through the H-Net paper, so for x-01 (Transformer encoder laye
+          rs versus H-Net's) a plain search fills every slot from H-Net. 
+          Fix: paper-scoped sub-searches.
+      85 -2. **The right words in the wrong section.** dc-07 asks what da
+         -ta the H-Net models were trained on; the Chinese-and-code secti
+         -on repeats the phrase "data budget" and wins. And un-03 (WMT 20
+         -16 English-to-Romanian BLEU, not in the paper) scores 19.6, hig
+         -her than 18 answerable questions.                              
+      85 +2. **The right words in the wrong section.** dc-07 asks what da
+         +ta the H-Net models were trained on; the Chinese-and-code secti
+         +on repeats the phrase "data budget" and wins. And un-03 (WMT 20
+         +16 English-to-Romanian BLEU, not in the paper) scores 19.6 on B
+         +M25, higher than 14 of the 25 answerable questions.            
+      86  3. **Facts split across pieces and pages.** At 120 words dc-01 
+          loses the smoothing module and answers "routing module and down
+          sampler", grounded and wrong. Moshi's Fisher size breaks across
+           a page as "It consists" / "of 2000 hours".
+      87  
+      88  ## 6. Retries
+     ...
+       95  
+       96  ## 8. What I'm unsure about, what I left out, what I learned
+       97  
+     … 5 more lines (ctrl+o to expand)
+
+⏺ The draft is 2,382 words including tables, which will be tight for 2 pages.
+  I'm building the .tex version (10pt, compact tables) and compiling it to see
+  the real page count:
+
+⏺ Bash(mkdir -p /private/tmp/claude-501/-Users-yash/279ac597-1f39-4ea2-b20e-1a57
+      3fedfea2/scratchpad && cat >
+      /private/tmp/claude-501/-Users-yash/279ac597-1f39-4ea2-b20…)
+  ⎿  warning: writeup.tex:78: Overfull \hbox (61.80176pt too wide) in parag
+     raph at lines 77--78
+     warning: writeup.tex:78: Overfull \hbox (61.80176pt too wide) in parag
+     … +5 lines (ctrl+o to expand)
+  ⎿  Created ~/Documents/Github/the-relay-dev/docs/writeup.tex (+131 -0)
+        1 +\documentclass[10pt]{article}                                 
+        2 +\usepackage[a4paper,margin=1.4cm]{geometry}                   
+        3 +\usepackage[T1]{fontenc}                                      
+        4 +\usepackage{lmodern,microtype,tabularx,booktabs,enumitem,xurl}
+        5 +\usepackage[hidelinks]{hyperref}                              
+        6 +\usepackage{titlesec}                                         
+        7 +\titlespacing*{\section}{0pt}{5pt}{2pt}                       
+        8 +\titleformat*{\section}{\normalsize\bfseries}                 
+        9 +\setlength{\parindent}{0pt}\setlength{\parskip}{3pt}          
+       10 +\pagestyle{plain}                                             
+       11 +\begin{document}                                              
+       12 +\begin{center}{\large\textbf{The Relay}}\end{center}          
+       13 +                                                              
+       14 +Yash Dagar. Code, raw results and conversation: \url{https://g
+          +ithub.com/yashdagar/the-relay}                                
+       15 +                                                              
+       16 +\section*{1. What I built and why}                            
+       17 +                                                              
+       18 +A Python asyncio pipeline with five steps. \textbf{Understand}
+          + (gpt-oss-20b) decides if the question is about the three pape
+          +rs and splits two-part questions into paper-scoped searches. \
+          +textbf{Retrieve} is a local BM25 tool over 300-word pieces tag
+          +ged with paper, section and page. \textbf{Decide} refuses with
+          +out any model call when the best BM25 score is under 7.0. \tex
+          +tbf{Draft} (gpt-oss-120b) answers only from the passages and c
+          +ites passage ids. \textbf{Check} runs two gates: a determinist
+          +ic one (every cited id was retrieved, every number in the answ
+          +er appears in its cited passage) and a model one (qwen3.8-27b,
+          + a different family, confirms support). A failed check gets on
+          +e redraft with specific feedback, then a refusal. A per-model 
+          +budget governor mirrors Groq's buckets, every request has a 15
+          + s deadline, and under pressure the pipeline steps down: lean 
+          +draft on gpt-oss-20b with three pieces, then the best passages
+          + quoted and labelled unchecked, then an honest budget message.
+          + A wrong answer is never on that ladder.                      
+       19 +                                                              
+       20 +The decision that shaped everything: \textbf{nothing reaches t
+          +he person until the check passes.} So in every table, first to
+          +ken equals total time. I gave up time to first token (about 0.
+          +5 s from the model, about 2 s after the check) to never retrac
+          +t a sentence. Because a request holds its slot through draft a
+          +nd check, all my deadlines are on total time.                 
+       21 +                                                              
+       22 +\section*{2. The real service and my stand-in}                
+       23 +                                                              
+       24 +\textbf{Table 1: Limits found in the real service (Groq free t
+          +ier, my key)}                                                 
+       25 +                                                              
+       26 +{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabular
+          +x}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedrigh
+          +t\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedrigh
+          +t\arraybackslash}X@{}}\toprule                                
+       27 +\textbf{Limit} & \textbf{Value found} & \textbf{How I found it
+          +} & \textbf{Confidence} \\ \midrule                           
+       28 +Requests per minute & 30 per model & 40 calls at once on allam
+          +-2-7b: 33 ok, 7 got 429 ``Limit 30''; docs say 30 for the gpt-
+          +oss models & High for allam, medium for the others \\         
+       29 +Tokens per minute & 8,000 per model (allam 6,000) & \texttt{x-
+          +ratelimit-limit-tokens} on every reply; 4th back-to-back draft
+          + got 429 ``Limit 8000'' & High \\                             
+       30 +Requests per day & 1,000 per model (allam 7,000) & \texttt{x-r
+          +atelimit-limit-requests}; reset reads 86.4 s per request used 
+          +& High \\                                                     
+       31 +Tokens per day & 200,000 (docs) & Docs only; never hit, though
+          + I used about 180K on gpt-oss-120b in 24 h & Low \\           
+       32 +Requests in flight & No limit seen up to 40 & Same 40-call bur
+          +st; no other error & Medium \\                                
+       33 +What it returns & HTTP 429 in 91 to 455 ms, JSON body with lim
+          +it type and exact wait & Probe runs & High \\                 
+       34 +Time until it recovers & TPM: 82 ms for 11 tokens (133 tokens/
+          +s refill); RPM: retry-after 2 s, first poll ok at 5.1 s; RPD: 
+          +one request per 86.4 s & 429 bodies and headers & Medium \\   
+       35 +\bottomrule\end{tabularx}}                                    
+       36 +                                                              
+       37 +Two things I only learned by running it. Tokens per minute are
+          + charged as prompt plus \texttt{max\_tokens} at admission, not
+          + tokens generated (78 in + 31 out cost 142 = 78 + 64). And \te
+          +xttt{retry-after} rounds up to whole seconds: it said 1 s when
+          + the body said 82.5 ms.                                       
+       38 +                                                              
+       39 +\textbf{The stand-in} is a Starlette server speaking the same 
+          +streaming API, so switching is a base URL change. Each model h
+          +as per-minute and per-day buckets that refill continuously, ch
+          +arge prompt plus \texttt{max\_tokens}, and refuse with Groq-sh
+          +aped 429s. Time to first token is log-normal per model, fitted
+          + to the p50 and p95 of 20 real draft calls each (gpt-oss-120b 
+          +481 ms, sigma 0.36). It can fail, succeed slowly, slow down ab
+          +ove 16 calls in flight, and stream a few words at a time. For 
+          +gold questions it answers from the gold evidence, but only if 
+          +retrieval sent that passage. \textbf{Where it differs most:} i
+          +ts answers are perfect by construction, so stand-in rows measu
+          +re delivery, not answer quality; and its slowdown under load i
+          +s a guess I never observed, because free-tier limits kept call
+          +s in flight under 16, so it never triggered.                  
+       40 +                                                              
+     … 91 more lines (ctrl+o to expand)
+  ⎿  … 1 more file changed
+  ⎿  (timeout 5m)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The draft runs to 3 pages against a 2-page limit, so I'm trimming about 30%
+  from the prose while keeping every required item and number.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ I'm swapping out the two inaccurate prompts in the assistant section: the zsh
+  and threshold bugs were caught by me, not you, and the budget arithmetic was
+  my own unprompted addition. I'll put in prompts you actually wrote and leave
+  that bullet for you to fill in.
+
+⏺ Write(~/Documents/Github/the-relay-dev/docs/writeup.md)
+  ⎿  Added 38 lines, removed 39 lines
+       4  
+       5  ## 1. What I built and why
+       6  
+       7 -A Python asyncio pipeline with five steps. **Understand** (gpt-
+         -oss-20b) decides if the question is about the three papers and 
+         -splits two-part questions into paper-scoped searches. **Retriev
+         -e** is a local BM25 tool over 300-word pieces tagged with paper
+         -, section and page. **Decide** refuses without any model call w
+         -hen the best BM25 score is under 7.0. **Draft** (gpt-oss-120b) 
+         -answers only from the passages and cites passage ids. **Check**
+         - runs two gates: a deterministic one (every cited id was retrie
+         -ved, every number in the answer appears in its cited passage) a
+         -nd a model one (qwen3.8-27b, a different family, confirms suppo
+         -rt). A failed check gets one redraft with specific feedback, th
+         -en a refusal. A per-model budget governor mirrors Groq's bucket
+         -s, every request has a 15 s deadline, and under pressure the pi
+         -peline steps down: lean draft on gpt-oss-20b with three pieces,
+         - then the best passages quoted and labelled unchecked, then an 
+         -honest budget message. A wrong answer is never on that ladder. 
+       7 +A Python asyncio pipeline. **Understand** (gpt-oss-20b) checks 
+         +the question is about the papers and splits two-part questions 
+         +into paper-scoped searches. **Retrieve** is a local BM25 tool o
+         +ver 300-word pieces tagged with paper, section and page. **Deci
+         +de** refuses with no model call when the best BM25 score is und
+         +er 7.0. **Draft** (gpt-oss-120b) answers only from the passages
+         +, citing passage ids. **Check** has two gates: deterministic (e
+         +very cited id was retrieved, every number in the answer is in i
+         +ts cited passage) and a model of a different family (qwen3.8-27
+         +b). A failed check gets one redraft with specific feedback, the
+         +n a refusal. A per-model budget governor mirrors Groq's buckets
+         +, each request has a 15 s deadline, and under pressure the pipe
+         +line steps down: lean draft (gpt-oss-20b, three pieces), then t
+         +he best passages quoted and marked unchecked, then a budget mes
+         +sage. A wrong answer is never a step on that ladder.           
+       8  
+       9 -The decision that shaped everything: **nothing reaches the pers
+         -on until the check passes.** So in every table, first token equ
+         -als total time. I gave up time to first token (about 0.5 s from
+         - the model, about 2 s after the check) to never retract a sente
+         -nce. Because a request holds its slot through draft and check, 
+         -all my deadlines are on total time.                            
+       9 +The decision that shaped it most: **nothing reaches the person 
+         +until the check passes.** So first token equals total time in e
+         +very table. I gave up first-token time (about 0.5 s from the mo
+         +del, about 2 s after the check) so I never retract a sentence, 
+         +and every deadline is on total time.                           
+      10  
+      11  ## 2. The real service and my stand-in
+      12  
+      13 -**Table 1: Limits found in the real service (Groq free tier, my
+         - key)**                                                        
+      13 +**Table 1: Limits found (Groq free tier, my key)**             
+      14  
+      15  | Limit | Value found | How I found it | Confidence |
+      16  |---|---|---|---|
+      17 -| Requests per minute | 30 per model | 40 calls at once on alla
+         -m-2-7b: 33 ok, 7 got 429 "Limit 30"; docs say 30 for the gpt-os
+         -s models | High for allam, medium for the others |             
+      18 -| Tokens per minute | 8,000 per model (allam 6,000) | `x-rateli
+         -mit-limit-tokens` on every reply; 4th back-to-back draft got 42
+         -9 "Limit 8000" | High |                                        
+      19 -| Requests per day | 1,000 per model (allam 7,000) | `x-ratelim
+         -it-limit-requests`; reset reads 86.4 s per request used | High 
+         -|                                                              
+      20 -| Tokens per day | 200,000 (docs) | Docs only; never hit, thoug
+         -h I used about 180K on gpt-oss-120b in 24 h | Low |            
+      21 -| Requests in flight | No limit seen up to 40 | Same 40-call bu
+         -rst; no other error | Medium |                                 
+      22 -| What it returns | HTTP 429 in 91 to 455 ms, JSON body with li
+         -mit type and exact wait | Probe runs | High |                  
+      23 -| Time until it recovers | TPM: 82 ms for 11 tokens (133 tokens
+         -/s refill); RPM: retry-after 2 s, first poll ok at 5.1 s; RPD: 
+         -one request per 86.4 s | 429 bodies and headers | Medium |     
+      17 +| Requests per minute | 30 per model | 40 calls at once on alla
+         +m-2-7b: 33 ok, 7 got 429 "Limit 30". Docs say 30 for gpt-oss | 
+         +High (allam), medium |                                         
+      18 +| Tokens per minute | 8,000 per model | Header on every reply; 
+         +4th back-to-back draft got 429 "Limit 8000" | High |           
+      19 +| Requests per day | 1,000 per model | Header; reset grows 86.4
+         + s per request used | High |                                   
+      20 +| Tokens per day | 200,000 (docs) | Never hit, after about 180K
+         + on gpt-oss-120b in 24 h | Low |                               
+      21 +| Requests in flight | None seen up to 40 | Same 40-call burst 
+         +| Medium |                                                     
+      22 +| What it returns | 429 in 91 to 455 ms, JSON naming the limit 
+         +and the exact wait | Probes | High |                           
+      23 +| Time to recover | TPM 82 ms for 11 tokens; RPM under 5.1 s; R
+         +PD 86.4 s per request | 429 bodies, headers, polling | Medium |
+      24  
+      25 -Two things I only learned by running it. Tokens per minute are 
+         -charged as prompt plus `max_tokens` at admission, not tokens ge
+         -nerated (78 in + 31 out cost 142 = 78 + 64). And `retry-after` 
+         -rounds up to whole seconds: it said 1 s when the body said 82.5
+         - ms.                                                           
+      25 +Only running it showed two things: tokens per minute are charge
+         +d as prompt plus `max_tokens` at admission (78 in, 31 out, char
+         +ged 142 = 78 + 64), and `retry-after` rounds up to whole second
+         +s (1 s when the body said 82.5 ms).                            
+      26  
+      27 -**The stand-in** is a Starlette server speaking the same stream
+         -ing API, so switching is a base URL change. Each model has per-
+         -minute and per-day buckets that refill continuously, charge pro
+         -mpt plus `max_tokens`, and refuse with Groq-shaped 429s. Time t
+         -o first token is log-normal per model, fitted to the p50 and p9
+         -5 of 20 real draft calls each (gpt-oss-120b 481 ms, sigma 0.36)
+         -. It can fail, succeed slowly, slow down above 16 calls in flig
+         -ht, and stream a few words at a time. For gold questions it ans
+         -wers from the gold evidence, but only if retrieval sent that pa
+         -ssage. **Where it differs most:** its answers are perfect by co
+         -nstruction, so stand-in rows measure delivery, not answer quali
+         -ty; and its slowdown under load is a guess I never observed, be
+         -cause free-tier limits kept calls in flight under 16, so it nev
+         -er triggered.                                                  
+      27 +**Stand-in:** a Starlette server on the same streaming API, so 
+         +switching is a base URL. Per-model minute and day buckets refil
+         +l continuously, charge prompt plus `max_tokens` and refuse with
+         + Groq-shaped 429s. First-token time is log-normal per model, fi
+         +tted to p50 and p95 of 20 real draft calls each. It can fail, s
+         +ucceed slowly, slow down above 16 calls in flight and stream pi
+         +eces. For gold questions it answers from the gold evidence, if 
+         +retrieval sent that passage. **Least like the real thing:** ans
+         +wers are perfect by construction, so stand-in rows measure deli
+         +very, not quality; and the slowdown under load is a guess, neve
+         +r triggered because free-tier limits kept calls in flight under
+         + 16.                                                           
+      28  
+      29  ## 3. Results
+      30  
+      31 -Stand-in rows use the measured free-tier limits. The real row i
+         -s the default-setting Table 3 run on Groq. Percentiles are p50 
+         -/ p95 / p99 over every request in the row.                     
+      31 +Stand-in rows use the measured free-tier limits; the real row i
+         +s the default-setting Table 3 run.                             
+      32  
+      33  **Table 2a: Latency**
+      34  
+      35  | Scenario | Real or stand-in | Requests | Duration (s) | Offer
+          ed (per min) | First token p50 / p95 / p99 (ms) | Total p50 / p
+          95 / p99 (ms) |
+      36  |---|---|---|---|---|---|---|
+      37 -| Steady, 2/min for 30 min | stand-in | 71 | 1781 | 2.4 | 1507 
+         -/ 4727 / 6987 | 1507 / 4727 / 6987 |                           
+      37 +| Steady, 2/min, 30 min | stand-in | 71 | 1781 | 2.4 | 1507 / 4
+         +727 / 6987 | 1507 / 4727 / 6987 |                              
+      38  | Burst, 20 in 30 s on 1/min | stand-in | 50 | 1187 | 2.5 | 259
+          5 / 13975 / 14457 | 2595 / 13975 / 14457 |
+      39 -| Overload, 6/min for 20 min | stand-in | 143 | 1192 | 7.2 | 33
+         -42 / 12848 / 14207 | 3342 / 12848 / 14207 |                    
+      40 -| Per-minute limits halved | stand-in | 71 | 1785 | 2.4 | 2036 
+         -/ 10480 / 12126 | 2036 / 10480 / 12126 |                       
+      39 +| Overload, 6/min, 20 min | stand-in | 143 | 1192 | 7.2 | 3342 
+         +/ 12848 / 14207 | 3342 / 12848 / 14207 |                       
+      40 +| Minute limits halved | stand-in | 71 | 1785 | 2.4 | 2036 / 10
+         +480 / 12126 | 2036 / 10480 / 12126 |                           
+      41  | Daily budget exhausted | stand-in | 50 | 1095 | 2.7 | 6 / 387
+          8 / 6504 | 6 / 3878 / 6504 |
+      42  | Paced 3/min | real | 20 | 382 | 3.2 | 1958 / 4199 / 7112 | 19
+          58 / 4199 / 7112 |
+      43  
+     ...
+       48  | Steady | 98.6 | 1.4 | 0.0 | 0.00 | 1 | 4484 | $1.84 |
+       49  | Burst | 60.0 | 40.0 | 0.0 | 0.00 | 13 | 4478 | $1.82 |
+       50  | Overload | 67.1 | 32.2 | 0.7 | 0.01 | 6 | 3747 | $1.43 |
+       51 -| Limits halved | 74.6 | 25.4 | 0.0 | 0.01 | 1 | 3893 | $1.52 
+          -|                                                             
+       51 +| Minute limits halved | 74.6 | 25.4 | 0.0 | 0.01 | 1 | 3893 |
+          + $1.52 |                                                      
+       52  | Daily exhausted | 34.0 | 66.0 | 0.0 | 0.00 | 1 | 4307 | $1.7
+           9 |
+       53  | Paced 3/min (real) | 100.0 | 0.0 | 0.0 | 0.00 | 0 | 4763 | $
+           2.03 |
+       54  
+       55 -"Rate-limited" means the person got the passages-or-budget rep
+          -ly because a limit was near, not that Groq sent a 429: the gov
+          -ernor waits before sending, so retries stay near zero. Cost us
+          -es Groq's paid list prices per model (the free tier is $0).   
+       55 +"Rate-limited" means the person got the passages or budget rep
+          +ly because a limit was near. The governor waits before sending
+          +, so Groq rarely sends a 429 and retries stay near zero. Cost 
+          +uses Groq's paid list prices per model.                       
+       56  
+       57 -**The number I could not have guessed:** the check step is **7
+          -7 to 79% of the bill** in every run. qwen3.8-27b costs $0.80/$
+          -4.00 per million tokens against $0.15/$0.60 for the drafting m
+          -odel, and it rereads all the passages.                        
+       57 +**The number I could not have guessed:** the check step is **7
+          +7 to 79% of the bill** in every run. qwen3.8-27b costs $0.80/$
+          +4.00 per million tokens against $0.15/$0.60 for the drafter, a
+          +nd it rereads every passage.                                  
+       58  
+       59 -**Answer quality on my 36 questions** (25 answerable, 5 the pa
+          -pers do not answer, 3 off-topic, 3 injections), current code, 
+          -real Groq: 21 of 25 answerable correct and cited, 1 wrong, 3 r
+          -efused wrongly; all 5 unanswerable, all 3 off-topic and the re
+          -fusal injection refused. Of the two answerable injections, inj
+          --02 kept to the facts and inj-03 was refused, because the corr
+          -ect reply ("160 ms, not 5 ms") repeats a number the paper does
+          - not contain and my number check is strict on purpose. Under l
+          -oad: **zero wrong answers in any shape**. Tokens per answer ab
+          -out 4,800.                                                    
+       59 +**Quality, my 36 questions** (25 answerable, 5 not in the pape
+          +rs, 3 off-topic, 3 injections), real Groq: 21 of 25 answerable
+          + correct and cited, 1 wrong, 3 wrongly refused. All 8 unanswer
+          +able and off-topic refused, and 2 of 3 injections handled; inj
+          +-03 was refused because the right reply ("160 ms, not 5 ms") r
+          +epeats a number the paper lacks, and I keep the number check s
+          +trict. **Zero wrong answers under any load shape.** About 4,80
+          +0 tokens per answer.                                          
+       60  
+       61  ## 4. Where the time goes
+       62  
+       63 -dc-04 on Groq took 11,395 ms, all before the first token. Wait
+          -ing 9,057 ms, working 1,712 ms (understand 388, second draft 8
+          -63, check 461), retrying 560 ms (a first draft that said "a ga
+          -in of 6.4 points", computed and not in the paper, so the numbe
+          -r check rejected it). The other 66 ms is retrieval and overhea
+          -d. The redraft had to wait in the governor because the first d
+          -raft's reservation had used the per-minute token budget. I kno
+          -w this from the per-attempt trace each reply carries: step, mo
+          -del, attempt, `queued_ms`, `duration_ms`, outcome, tokens (`re
+          -sults/20261111-1657-eval-300w-k5-hybrid/replies.jsonl`). A dif
+          -ferent slow one, mos-03 (7,840 ms), spent zero time waiting: G
+          -roq took 3,258 ms to return 49 tokens on the routing call, aga
+          -inst 537 ms usually.                                          
+       63 +dc-04 on Groq: 11,395 ms, all before the first token. **Waitin
+          +g** 9,057 ms, **working** 1,712 ms (understand 388, draft 863,
+          + check 461), **retrying** 560 ms (a first draft that wrote "a 
+          +gain of 6.4 points", computed, not in the paper, so the number
+          + check rejected it), 66 ms retrieval and overhead. The redraft
+          + waited because the first draft's reservation had spent the mi
+          +nute's token budget. I know this from the per-attempt trace ev
+          +ery reply carries (step, model, attempt, queued and working ms
+          +, outcome, tokens). By contrast mos-03 (7,840 ms) never waited
+          +: Groq took 3,258 ms for a 49-token routing reply that usually
+          + takes 537.                                                   
+       64  
+       65  ## 5. When a limit is hit
+       66  
+       67 -**Per minute:** the governor holds the request until tokens re
+          -fill, but only if that still leaves 3.1 s for draft and check 
+          -before the 15 s deadline. Otherwise it drafts on the lean mode
+          -l with three pieces (24 lean drafts across 143 requests under 
+          -overload, 17 across 71 with halved limits). Otherwise the pers
+          -on gets the top passages, quoted and marked unchecked, with "t
+          -ry again in a minute". So everyone is delayed up to about 13 s
+          -, some get a shorter answer from a smaller model, and nobody i
+          -s dropped silently. In the burst, 20 of 50 got passages instea
+          -d of an answer, and none took longer than 14.6 s. **Per day:**
+          - the budget is checked before any model call. If the draft or 
+          -check model has nothing left, the reply comes back in about 6 
+          -ms. If only the router's model is out, routing is skipped and 
+          -the score filter does its job.                                
+       67 +**Per minute:** the governor holds a request until tokens refi
+          +ll, if that still leaves 3.1 s for draft and check inside 15 s
+          +. If not, the lean model drafts from three pieces (24 lean dra
+          +fts over 143 requests in overload). If not even that, the pers
+          +on gets the top passages marked unchecked and "try again in a 
+          +minute". So everyone is delayed up to about 13 s, some get a s
+          +maller model's answer, nobody is dropped silently. In the burs
+          +t 20 of 50 got passages and none waited past 14.6 s. **Per day
+          +:** the budget is checked before any model call; with no draft
+          + or check budget left the reply comes in about 6 ms. If only t
+          +he router's model is out, routing is skipped.                 
+       68  
+       69  ## Retrieval: quality versus cost
+       70  
+       71 -**Table 3: Retrieval settings (20 fixed gold questions each, r
+          -eal Groq)**                                                   
+       71 +**Table 3 (20 fixed gold questions per setting, real Groq)**  
+       72  
+       73  | Setting | Questions | Correct and cited % | Wrong % | Correc
+           tly refused % | Tokens per answer | First token p50 / p95 (ms)
+            | Total p50 / p95 (ms) |
+       74  |---|---|---|---|---|---|---|---|
+       75 -| 120 words, 8 pieces, BM25, re-rank no | 20 | 75.0 | 5.0 | 20
+          -.0 | 4573 | 1941 / 4302 | 1941 / 4302 |                       
+       76 -| 300 words, 5 pieces, BM25, re-rank no | 20 | 75.0 | 0.0 | 20
+          -.0 | 4763 | 1958 / 4199 | 1958 / 4199 |                       
+       77 -| 300 words, 5 pieces, hybrid, re-rank no | 20 | 80.0 | 0.0 | 
+          -20.0 | 4962 | 1978 / 4246 | 1978 / 4246 |                     
+       78 -| 300 words, 5 pieces, hybrid, re-rank yes | not measured | no
+          -t measured | not measured | not measured | not measured | not 
+          -measured | not measured |                                     
+       75 +| 120 words, 8 pieces, BM25, no re-rank | 20 | 75.0 | 5.0 | 20
+          +.0 | 4573 | 1941 / 4302 | 1941 / 4302 |                       
+       76 +| 300 words, 5 pieces, BM25, no re-rank | 20 | 75.0 | 0.0 | 20
+          +.0 | 4763 | 1958 / 4199 | 1958 / 4199 |                       
+       77 +| 300 words, 5 pieces, hybrid, no re-rank | 20 | 80.0 | 0.0 | 
+          +20.0 | 4962 | 1978 / 4246 | 1978 / 4246 |                     
+       78  
+       80 -The three settings differ by one question each, and dc-04 has 
+          -flipped between runs with the same passages, so 20 questions c
+          -annot separate them. Offline, on 27 questions, 300w-k5-BM25 ha
+          -d the best recall (0.944) at 0.9 ms p99. Re-ranking with MiniL
+          -M was worse (recall 0.889) and took 1.6 s per search, so I nev
+          -er ran it end to end. I chose **300 words, 5 pieces, BM25**: s
+          -ame answers, no model, no tail. When the limit is close I keep
+          - retrieval (it is free) and send fewer pieces (lean k = 3).   
+       79 +They differ by one question each, and dc-04 flips between runs
+          + on the same passages, so 20 questions cannot separate them. O
+          +ffline on 27 questions, 300-word BM25 had the best recall (0.9
+          +44, p99 0.9 ms); a MiniLM re-rank was worse (0.889) and took 1
+          +.6 s a search, so I never ran it end to end. I chose **300 wor
+          +ds, 5 pieces, BM25**: same answers, no model, no tail. Near th
+          +e limit I keep retrieval (it is free) and send fewer pieces.  
+       80  
+       81  ## How this library will mislead a naive retriever
+       82  
+       84 -1. **One paper talks about another.** "Transformer" appears al
+          -l through the H-Net paper, so for x-01 (Transformer encoder la
+          -yers versus H-Net's) a plain search fills every slot from H-Ne
+          -t. Fix: paper-scoped sub-searches.                            
+       85 -2. **The right words in the wrong section.** dc-07 asks what d
+          -ata the H-Net models were trained on; the Chinese-and-code sec
+          -tion repeats the phrase "data budget" and wins. And un-03 (WMT
+          - 2016 English-to-Romanian BLEU, not in the paper) scores 19.6 
+          -on BM25, higher than 14 of the 25 answerable questions.       
+       86 -3. **Facts split across pieces and pages.** At 120 words dc-01
+          - loses the smoothing module and answers "routing module and do
+          -wnsampler", grounded and wrong. Moshi's Fisher size breaks acr
+          -oss a page as "It consists" / "of 2000 hours".                
+       83 +1. **One paper keeps naming another.** "Transformer" runs thro
+          +ugh the H-Net paper, so x-01 (encoder layers in the Transforme
+          +r versus H-Net) fills every slot from H-Net. I made sub-search
+          +es paper-scoped.                                              
+       84 +2. **The right words in the wrong section.** dc-07 asks what d
+          +ata H-Net trained on; the Chinese-and-code section repeats "da
+          +ta budget" and wins. un-03 (English-to-Romanian BLEU, not in t
+          +he paper) scores 19.6, above 14 of 25 answerable questions.   
+       85 +3. **Facts split across pieces.** At 120 words dc-01 loses the
+          + smoothing module and answers "routing module and downsampler"
+          +, grounded and wrong. Moshi's Fisher size breaks across a page
+          +: "It consists" / "of 2000 hours".                            
+       86  
+       87  ## 6. Retries
+       88  
+       90 -One retry budget of two per request, shared across steps, so a
+          - slow request cannot become a retry storm. A 429 waits the exa
+          -ct time in the body, never the rounded `retry-after`. A per-da
+          -y 429 is never retried. A 5xx backs off 250 ms × 2^n with jitt
+          -er. A timeout is retried only if a whole step still fits befor
+          -e the deadline. **Retrying made it worse** in dc-04 above: the
+          - redraft was right, but it needed a second full reservation an
+          -d waited 9 s, turning a 2 s answer into 11 s.                 
+       89 +Two retries per request, shared across steps, so one slow requ
+          +est cannot become a storm. A 429 waits the exact time in the b
+          +ody, not the rounded `retry-after`; a per-day 429 is never ret
+          +ried; a 5xx backs off 250 ms × 2^n with jitter; a timeout is r
+          +etried only if a whole step still fits. **It made things worse
+          +** in dc-04: the redraft was right but needed a second full re
+          +servation, waited 9 s, and turned a 2 s answer into 11 s.     
+       90  
+       91  ## 7. What the person sees
+       92  
+       94 -At 3 pm with the budget gone, within about 6 ms: "The assistan
+          -t has used up today's model budget, so it cannot write a check
+          -ed answer right now. The budget resets gradually; try again in
+          - about 2 minutes." Then the three best-matching passages with 
+          -paper, section and page, under "They are quoted, not checked, 
+          -and may not answer it." The minutes come from the measured ref
+          -ill (one request per 86.4 s), not from midnight.              
+       93 +At 3 pm, in about 6 ms: "The assistant has used up today's mod
+          +el budget, so it cannot write a checked answer right now. The 
+          +budget resets gradually; try again in about 2 minutes." Below 
+          +it, the three best passages with paper, section and page, unde
+          +r "They are quoted, not checked, and may not answer it." The 2
+          + minutes come from the measured refill of one request per 86.4
+          + s.                                                           
+       94  
+       95  ## 8. What I'm unsure about, what I left out, what I learned
+       96  
+       98 -**Least certain:** the tokens-per-day limit. I never hit it. I
+          -f it is a hard 200K per model per day, the check model (about 
+          -2,700 tokens per answer) caps the system near 75 answers a day
+          -, and my "try again in about 2 minutes" would be badly wrong. 
+          -**Not built on purpose:** a cache for repeated questions (burs
+          -ts after an outage are mostly the same question, but I wanted 
+          -the numbers to show the uncached system), and streaming the dr
+          -aft before the check. **Learned:** a token-per-minute limit ch
+          -arged on `max_tokens` turns `max_tokens` into a throughput kno
+          -b. My drafts use about 120 of the 400 I reserve, so about 70% 
+          -of what I reserve is never used, and that is what forces the l
+          -ean path for two-part questions.                              
+       97 +**Least certain:** tokens per day. If it is a hard 200K per mo
+          +del, the check model (about 2,700 tokens an answer) caps us ne
+          +ar 75 answers a day and "about 2 minutes" is badly wrong. **Le
+          +ft out on purpose:** a cache for repeated questions, since bur
+          +sts after an outage repeat themselves but I wanted the uncache
+          +d numbers; and streaming the draft before the check. **Learned
+          +:** when tokens per minute are charged on `max_tokens`, `max_t
+          +okens` is a throughput knob. My drafts use about 120 of the 40
+          +0 I reserve, and that unused 70% is what pushes two-part quest
+          +ions onto the lean path.                                      
+       98  
+       99  ## Your feedback on Vaani
+      100  
+      102 -[Yash to write: what stood out, what confused you, one thing y
+          -ou would change, after visiting https://www.vaani.dev/.]      
+      101 +[Yash to write after visiting https://www.vaani.dev/: what sto
+          +od out, what confused you, one thing you would change.]       
+      102  
+      103  ## How I worked with the assistant
+      104  
+      106 -The full conversation is in `docs/conversation/`. [Yash to rev
+          -iew and edit everything in this section; these are candidates 
+          -from the session.]                                            
+      105 +Full conversation in `docs/conversation/`. [Yash: review and r
+          +ewrite in your words.]                                        
+      106  
+      108 -- **Three prompts that mattered:** tests first for every layer
+          - before any pipeline code, so each layer had a measurable cont
+          -ract; "hold the draft until the check passes", which set what 
+          -"fast" means; and making the assistant show the budget arithme
+          -tic before each real run, so the daily limit was planned, not 
+          -discovered.                                                   
+      109 -- **Something it got wrong that I caught:** an unquoted zsh va
+          -riable made three Table 3 runs evaluate zero questions; the em
+          -pty `questions` list in `run.json` gave it away. Also the hybr
+          -id run refused everything because the 7.0 threshold was BM25-s
+          -cale; the per-step trace showed refusals right after routing. 
+      110 -- **Where I overruled it:** it recommended emulating the Devel
+          -oper plan in the stand-in for bigger samples; I kept the measu
+          -red free-tier limits and longer runs, because that is the acco
+          -unt the system actually runs on.                              
+      107 +- **Prompts that mattered:** writing tests for every layer bef
+          +ore any pipeline code, so each layer had a measurable contract
+          +; "hold the draft until the check passes", which defined fast;
+          + and recording findings as internal reports even where the bri
+          +ef does not ask, which is where most write-up numbers came fro
+          +m.                                                            
+      108 +- **Something it got wrong that I caught:** [Yash to fill. The
+          + zsh and threshold bugs were caught by the assistant itself.] 
+      109 +- **Where I overruled it:** it wanted the stand-in to emulate 
+          +the Developer plan for bigger samples; I kept the measured fre
+          +e-tier limits with longer runs, the account we actually have. 
+      110  - **Distinctly mine:** [Yash to write.]
+
+⏺ Bash(cd /Users/yash/Documents/Github/the-relay-dev && uv run python
+      /private/tmp/claude-501/-Users-yash/279ac597-1f39-4ea2-b20e-1a573fedfea2/s
+      cratchpad/md2tex.py doc…)
+  ⎿  3 pages
+     1 774 1
+     2 819 2
+     … +2 lines (ctrl+o to expand)
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.tex (+38 -39)
+      15  
+      16  \section*{1. What I built and why}
+      17  
+      18 -A Python asyncio pipeline with five steps. \textbf{Understand} 
+         -(gpt-oss-20b) decides if the question is about the three papers
+         - and splits two-part questions into paper-scoped searches. \tex
+         -tbf{Retrieve} is a local BM25 tool over 300-word pieces tagged 
+         -with paper, section and page. \textbf{Decide} refuses without a
+         -ny model call when the best BM25 score is under 7.0. \textbf{Dr
+         -aft} (gpt-oss-120b) answers only from the passages and cites pa
+         -ssage ids. \textbf{Check} runs two gates: a deterministic one (
+         -every cited id was retrieved, every number in the answer appear
+         -s in its cited passage) and a model one (qwen3.8-27b, a differe
+         -nt family, confirms support). A failed check gets one redraft w
+         -ith specific feedback, then a refusal. A per-model budget gover
+         -nor mirrors Groq's buckets, every request has a 15 s deadline, 
+         -and under pressure the pipeline steps down: lean draft on gpt-o
+         -ss-20b with three pieces, then the best passages quoted and lab
+         -elled unchecked, then an honest budget message. A wrong answer 
+         -is never on that ladder.                                       
+      18 +A Python asyncio pipeline. \textbf{Understand} (gpt-oss-20b) ch
+         +ecks the question is about the papers and splits two-part quest
+         +ions into paper-scoped searches. \textbf{Retrieve} is a local B
+         +M25 tool over 300-word pieces tagged with paper, section and pa
+         +ge. \textbf{Decide} refuses with no model call when the best BM
+         +25 score is under 7.0. \textbf{Draft} (gpt-oss-120b) answers on
+         +ly from the passages, citing passage ids. \textbf{Check} has tw
+         +o gates: deterministic (every cited id was retrieved, every num
+         +ber in the answer is in its cited passage) and a model of a dif
+         +ferent family (qwen3.8-27b). A failed check gets one redraft wi
+         +th specific feedback, then a refusal. A per-model budget govern
+         +or mirrors Groq's buckets, each request has a 15 s deadline, an
+         +d under pressure the pipeline steps down: lean draft (gpt-oss-2
+         +0b, three pieces), then the best passages quoted and marked unc
+         +hecked, then a budget message. A wrong answer is never a step o
+         +n that ladder.                                                 
+      19  
+      20 -The decision that shaped everything: \textbf{nothing reaches th
+         -e person until the check passes.} So in every table, first toke
+         -n equals total time. I gave up time to first token (about 0.5 s
+         - from the model, about 2 s after the check) to never retract a 
+         -sentence. Because a request holds its slot through draft and ch
+         -eck, all my deadlines are on total time.                       
+      20 +The decision that shaped it most: \textbf{nothing reaches the p
+         +erson until the check passes.} So first token equals total time
+         + in every table. I gave up first-token time (about 0.5 s from t
+         +he model, about 2 s after the check) so I never retract a sente
+         +nce, and every deadline is on total time.                      
+      21  
+      22  \section*{2. The real service and my stand-in}
+      23  
+      24 -\textbf{Table 1: Limits found in the real service (Groq free ti
+         -er, my key)}                                                   
+      24 +\textbf{Table 1: Limits found (Groq free tier, my key)}        
+      25  
+      26  {\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+          }{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\
+          arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\a
+          rraybackslash}X@{}}\toprule
+      27  \textbf{Limit} & \textbf{Value found} & \textbf{How I found it}
+           & \textbf{Confidence} \\ \midrule
+      28 -Requests per minute & 30 per model & 40 calls at once on allam-
+         -2-7b: 33 ok, 7 got 429 ``Limit 30''; docs say 30 for the gpt-os
+         -s models & High for allam, medium for the others \\            
+      29 -Tokens per minute & 8,000 per model (allam 6,000) & \texttt{x-r
+         -atelimit-limit-tokens} on every reply; 4th back-to-back draft g
+         -ot 429 ``Limit 8000'' & High \\                                
+      30 -Requests per day & 1,000 per model (allam 7,000) & \texttt{x-ra
+         -telimit-limit-requests}; reset reads 86.4 s per request used & 
+         -High \\                                                        
+      31 -Tokens per day & 200,000 (docs) & Docs only; never hit, though 
+         -I used about 180K on gpt-oss-120b in 24 h & Low \\             
+      32 -Requests in flight & No limit seen up to 40 & Same 40-call burs
+         -t; no other error & Medium \\                                  
+      33 -What it returns & HTTP 429 in 91 to 455 ms, JSON body with limi
+         -t type and exact wait & Probe runs & High \\                   
+      34 -Time until it recovers & TPM: 82 ms for 11 tokens (133 tokens/s
+         - refill); RPM: retry-after 2 s, first poll ok at 5.1 s; RPD: on
+         -e request per 86.4 s & 429 bodies and headers & Medium \\      
+      28 +Requests per minute & 30 per model & 40 calls at once on allam-
+         +2-7b: 33 ok, 7 got 429 ``Limit 30''. Docs say 30 for gpt-oss & 
+         +High (allam), medium \\                                        
+      29 +Tokens per minute & 8,000 per model & Header on every reply; 4t
+         +h back-to-back draft got 429 ``Limit 8000'' & High \\          
+      30 +Requests per day & 1,000 per model & Header; reset grows 86.4 s
+         + per request used & High \\                                    
+      31 +Tokens per day & 200,000 (docs) & Never hit, after about 180K o
+         +n gpt-oss-120b in 24 h & Low \\                                
+      32 +Requests in flight & None seen up to 40 & Same 40-call burst & 
+         +Medium \\                                                      
+      33 +What it returns & 429 in 91 to 455 ms, JSON naming the limit an
+         +d the exact wait & Probes & High \\                            
+      34 +Time to recover & TPM 82 ms for 11 tokens; RPM under 5.1 s; RPD
+         + 86.4 s per request & 429 bodies, headers, polling & Medium \\ 
+      35  \bottomrule\end{tabularx}}
+      36  
+      37 -Two things I only learned by running it. Tokens per minute are 
+         -charged as prompt plus \texttt{max\_tokens} at admission, not t
+         -okens generated (78 in + 31 out cost 142 = 78 + 64). And \textt
+         -t{retry-after} rounds up to whole seconds: it said 1 s when the
+         - body said 82.5 ms.                                            
+      37 +Only running it showed two things: tokens per minute are charge
+         +d as prompt plus \texttt{max\_tokens} at admission (78 in, 31 o
+         +ut, charged 142 = 78 + 64), and \texttt{retry-after} rounds up 
+         +to whole seconds (1 s when the body said 82.5 ms).             
+      38  
+      39 -\textbf{The stand-in} is a Starlette server speaking the same s
+         -treaming API, so switching is a base URL change. Each model has
+         - per-minute and per-day buckets that refill continuously, charg
+         -e prompt plus \texttt{max\_tokens}, and refuse with Groq-shaped
+         - 429s. Time to first token is log-normal per model, fitted to t
+         -he p50 and p95 of 20 real draft calls each (gpt-oss-120b 481 ms
+         -, sigma 0.36). It can fail, succeed slowly, slow down above 16 
+         -calls in flight, and stream a few words at a time. For gold que
+         -stions it answers from the gold evidence, but only if retrieval
+         - sent that passage. \textbf{Where it differs most:} its answers
+         - are perfect by construction, so stand-in rows measure delivery
+         -, not answer quality; and its slowdown under load is a guess I 
+         -never observed, because free-tier limits kept calls in flight u
+         -nder 16, so it never triggered.                                
+      39 +\textbf{Stand-in:} a Starlette server on the same streaming API
+         +, so switching is a base URL. Per-model minute and day buckets 
+         +refill continuously, charge prompt plus \texttt{max\_tokens} an
+         +d refuse with Groq-shaped 429s. First-token time is log-normal 
+         +per model, fitted to p50 and p95 of 20 real draft calls each. I
+         +t can fail, succeed slowly, slow down above 16 calls in flight 
+         +and stream pieces. For gold questions it answers from the gold 
+         +evidence, if retrieval sent that passage. \textbf{Least like th
+         +e real thing:} answers are perfect by construction, so stand-in
+         + rows measure delivery, not quality; and the slowdown under loa
+         +d is a guess, never triggered because free-tier limits kept cal
+         +ls in flight under 16.                                         
+      40  
+      41  \section*{3. Results}
+      42  
+     … 110 more lines (ctrl+o to expand)
+  ⎿  … 1 more file changed
+
+⏺ Still 3 pages, with 262 words on the last one. I'll tighten the layout first
+  (body at 9pt, 1.1 cm margins, denser tables), then cut more words if needed:
+
+⏺ Bash(cd /Users/yash/Documents/Github/the-relay-dev && S=/private/tmp/claude-50
+      1/-Users-yash/279ac597-1f39-4ea2-b20e-1a573fedfea2/scratchpad && sed -i ''
+      's/margin=1.…)
+  ⎿  2 pages [899, 955]
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.tex (+4 -4)
+       1  \documentclass[10pt]{article}
+       2 -\usepackage[a4paper,margin=1.4cm]{geometry}                    
+       2 +\usepackage[a4paper,margin=1.1cm]{geometry}                    
+       3  \usepackage[T1]{fontenc}
+       4  \usepackage{lmodern,microtype,tabularx,booktabs,enumitem,xurl}
+       5  \usepackage[hidelinks]{hyperref}
+       6  \usepackage{titlesec}
+       7 -\titlespacing*{\section}{0pt}{5pt}{2pt}                        
+       7 +\titlespacing*{\section}{0pt}{4pt}{1pt}                        
+       8  \titleformat*{\section}{\normalsize\bfseries}
+       9 -\setlength{\parindent}{0pt}\setlength{\parskip}{3pt}           
+       9 +\setlength{\parindent}{0pt}\setlength{\parskip}{2pt}           
+      10  \pagestyle{plain}
+      11 -\begin{document}                                               
+      11 +\begin{document}\small                                         
+      12  \begin{center}{\large\textbf{The Relay}}\end{center}
+      13  
+      14  Yash Dagar. Code, raw results and conversation: \url{https://gi
+          thub.com/yashdagar/the-relay}
+  ⎿  … 1 more file changed
+  ⎿  (timeout 5m)
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+⏺ The document fits in exactly two pages, leaving no room for your Vaani
+  paragraph. I'll try two layout fixes first: narrowing Table 3's first column
+  and fixing the 2ˆn rendering.
+
+⏺ Bash(cd /Users/yash/Documents/Github/the-relay-dev && S=/private/tmp/claude-50
+      1/-Users-yash/279ac597-1f39-4ea2-b20e-1a573fedfea2/scratchpad && python3 -
+      <<EOF
+      import…)
+  ⎿  29:        spec = "@{}>{\\raggedright\\arraybackslash}X" + "".join([">
+     {\\raggedright\\arraybackslash}X"] * (n - 1)) + "@{}"
+     2 pages
+     last text y 796 of 841.8900146484375
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.md (+1 -1)
+      86  
+      87  ## 6. Retries
+      88  
+      89 -Two retries per request, shared across steps, so one slow reque
+         -st cannot become a storm. A 429 waits the exact time in the bod
+         -y, not the rounded `retry-after`; a per-day 429 is never retrie
+         -d; a 5xx backs off 250 ms × 2^n with jitter; a timeout is retri
+         -ed only if a whole step still fits. **It made things worse** in
+         - dc-04: the redraft was right but needed a second full reservat
+         -ion, waited 9 s, and turned a 2 s answer into 11 s.            
+      89 +Two retries per request, shared across steps, so one slow reque
+         +st cannot become a storm. A 429 waits the exact time in the bod
+         +y, not the rounded `retry-after`; a per-day 429 is never retrie
+         +d; a 5xx backs off 250 ms, doubling, with jitter; a timeout is 
+         +retried only if a whole step still fits. **It made things worse
+         +** in dc-04: the redraft was right but needed a second full res
+         +ervation, waited 9 s, and turned a 2 s answer into 11 s.       
+      90  
+      91  ## 7. What the person sees
+      92  
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.tex (+1 -1)
+      103  
+      104  \section*{6. Retries}
+      105  
+      106 -Two retries per request, shared across steps, so one slow requ
+          -est cannot become a storm. A 429 waits the exact time in the b
+          -ody, not the rounded \texttt{retry-after}; a per-day 429 is ne
+          -ver retried; a 5xx backs off 250 ms $\times$ 2\textasciicircum
+          -{}n with jitter; a timeout is retried only if a whole step sti
+          -ll fits. \textbf{It made things worse} in dc-04: the redraft w
+          -as right but needed a second full reservation, waited 9 s, and
+          - turned a 2 s answer into 11 s.                               
+      106 +Two retries per request, shared across steps, so one slow requ
+          +est cannot become a storm. A 429 waits the exact time in the b
+          +ody, not the rounded \texttt{retry-after}; a per-day 429 is ne
+          +ver retried; a 5xx backs off 250 ms, doubling, with jitter; a 
+          +timeout is retried only if a whole step still fits. \textbf{It
+          + made things worse} in dc-04: the redraft was right but needed
+          + a second full reservation, waited 9 s, and turned a 2 s answe
+          +r into 11 s.                                                  
+      107  
+      108  \section*{7. What the person sees}
+      109  
+  ⎿  … 1 more file changed
+
+  Made 1 scratchpad edit +2 -1 (ctrl+o to expand)
+
+⏺ Bash(cd /Users/yash/Documents/Github/the-relay-dev && S=/private/tmp/claude-50
+      1/-Users-yash/279ac597-1f39-4ea2-b20e-1a573fedfea2/scratchpad && uv run
+      python $S/md2te…)
+  ⎿  2 pages
+     last text y 726 of 841.8900146484375
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/writeup.tex (+4 -4)
+      23  
+      24  \textbf{Table 1: Limits found (Groq free tier, my key)}
+      25  
+      26 -{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         -}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\
+         -arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\a
+         -rraybackslash}X@{}}\toprule                                    
+      26 +{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         +}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\ragge
+         +dright\arraybackslash}X>{\raggedright\arraybackslash}X>{\ragged
+         +right\arraybackslash}X@{}}\toprule                             
+      27  \textbf{Limit} & \textbf{Value found} & \textbf{How I found it}
+           & \textbf{Confidence} \\ \midrule
+      28  Requests per minute & 30 per model & 40 calls at once on allam-
+          2-7b: 33 ok, 7 got 429 ``Limit 30''. Docs say 30 for gpt-oss & 
+          High (allam), medium \\
+      29  Tokens per minute & 8,000 per model & Header on every reply; 4t
+          h back-to-back draft got 429 ``Limit 8000'' & High \\
+     ...
+      44  
+      45  \textbf{Table 2a: Latency}
+      46  
+      47 -{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         -}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\
+         -arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\a
+         -rraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\ar
+         -raybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule      
+      47 +{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         +}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\ragge
+         +dright\arraybackslash}X>{\raggedright\arraybackslash}X>{\ragged
+         +right\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedr
+         +ight\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprul
+         +e                                                              
+      48  \textbf{Scenario} & \textbf{Real or stand-in} & \textbf{Request
+          s} & \textbf{Duration (s)} & \textbf{Offered (per min)} & \text
+          bf{First token p50 / p95 / p99 (ms)} & \textbf{Total p50 / p95 
+          / p99 (ms)} \\ \midrule
+      49  Steady, 2/min, 30 min & stand-in & 71 & 1781 & 2.4 & 1507 / 472
+          7 / 6987 & 1507 / 4727 / 6987 \\
+      50  Burst, 20 in 30 s on 1/min & stand-in & 50 & 1187 & 2.5 & 2595 
+          / 13975 / 14457 & 2595 / 13975 / 14457 \\
+     ...
+      56  
+      57  \textbf{Table 2b: Outcomes}
+      58  
+      59 -{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         -}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\
+         -arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\a
+         -rraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\ar
+         -raybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arr
+         -aybackslash}X@{}}\toprule                                      
+      59 +{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         +}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\ragge
+         +dright\arraybackslash}X>{\raggedright\arraybackslash}X>{\ragged
+         +right\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedr
+         +ight\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedri
+         +ght\arraybackslash}X@{}}\toprule                               
+      60  \textbf{Scenario} & \textbf{Succeeded \%} & \textbf{Rate-limite
+          d \%} & \textbf{Timed out \%} & \textbf{Retries per request} & 
+          \textbf{Peak queue} & \textbf{Tokens per answer} & \textbf{Cost
+           per 1,000 answers} \\ \midrule
+      61  Steady & 98.6 & 1.4 & 0.0 & 0.00 & 1 & 4484 & \$1.84 \\
+      62  Burst & 60.0 & 40.0 & 0.0 & 0.00 & 13 & 4478 & \$1.82 \\
+     ...
+      84  
+      85  \textbf{Table 3 (20 fixed gold questions per setting, real Groq
+          )}
+      86  
+      87 -{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         -}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\
+         -arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\a
+         -rraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\ar
+         -raybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arr
+         -aybackslash}X@{}}\toprule                                      
+      87 +{\scriptsize\setlength{\tabcolsep}{2pt}\noindent\begin{tabularx
+         +}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\ragge
+         +dright\arraybackslash}X>{\raggedright\arraybackslash}X>{\ragged
+         +right\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedr
+         +ight\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedri
+         +ght\arraybackslash}X@{}}\toprule                               
+      88  \textbf{Setting} & \textbf{Questions} & \textbf{Correct and cit
+          ed \%} & \textbf{Wrong \%} & \textbf{Correctly refused \%} & \t
+          extbf{Tokens per answer} & \textbf{First token p50 / p95 (ms)} 
+          & \textbf{Total p50 / p95 (ms)} \\ \midrule
+      89  120 words, 8 pieces, BM25, no re-rank & 20 & 75.0 & 5.0 & 20.0 
+          & 4573 & 1941 / 4302 & 1941 / 4302 \\
+      90  300 words, 5 pieces, BM25, no re-rank & 20 & 75.0 & 0.0 & 20.0 
+          & 4763 & 1958 / 4199 & 1958 / 4199 \\
+  ⎿  … 1 more file changed
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ The write-up now fits on 2 pages, with room left for your Vaani feedback and
+  your own paragraph. Next I'll move your conversation export into
+  docs/conversation/, update the README, and add a findings log for the live
+  interview.
+⏺ Bash(cd /Users/yash/Documents/Github/the-relay-dev && mkdir -p
+      docs/conversation && mv "../the-relay/relay-assignment-conversation
+      history.txt" docs/conversation/rel…)
+  ⎿  total 768
+     drwxr-xr-x@ 3 yash  staff      96 11 Nov 17:35 .
+     drwxr-xr-x@ 8 yash  staff     256 11 Nov 17:35 ..
+     … +3 lines (ctrl+o to expand)
+  ⎿  1 file changed (binary, mode only or too large to show)
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+⏺ The export has no real API key, only an empty GROQ_API_KEY line from
+  .env.example, but it does contain your Groq organization id 14 times. I've
+  left the transcript untouched since editing it would make the history look
+  cleaned up, so that's your call; I'm moving on to the README now.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+⏺ Bash(python3 - <<'EOF'
+      import pathlib…)
+  ⎿  1
+  ⎿  Updated ~/Documents/Github/the-relay-dev/README.md (+40 -14)
+       79  
+       80  When the governor says a step cannot be afforded in time, the 
+           pipeline steps down instead of queueing until the person gives
+            up:
+       81  
+       82 -1. **Full:** large model drafts, small model checks.          
+       83 -2. **Lean:** fewer passages, small model drafts, deterministic
+          - citation check only.                                         
+       82 +1. **Full:** gpt-oss-120b drafts; the deterministic grounding 
+          +check and qwen3.8-27b both check.                             
+       83 +2. **Lean:** gpt-oss-20b drafts from three passages; both chec
+          +ks still apply.                                               
+       84  3. **Extractive:** no model call; return the best matching pas
+           sages verbatim with their citations and say that a written ans
+           wer is unavailable right now.
+       85  4. **Honest no:** budget is gone; say so, say when it resets, 
+           and do not guess.
+       86  
+       87  A wrong answer is never on the ladder. Losing speed or fluency
+            is acceptable; losing correctness is not.
+       88  
+       89 +Models (chosen from `results/20261111-0150-probe-latency`): gp
+          +t-oss-20b understands, gpt-oss-120b drafts, qwen3.8-27b checks
+          +. Settings live in `src/relay/config.py`.                     
+       90 +                                                              
+       91  ### Repository layout
+       92  
+       93  ```
+       94  src/relay/
+       93 -  library.py      parse PDFs, split into cited pieces         
+       94 -  retrieval.py    BM25, hybrid with local embeddings, rerank  
+       95 -  client.py       streaming model client, timeouts, retries   
+       96 -  governor.py     rate and budget buckets, header sync        
+       97 -  pipeline.py     the five steps, branches and ladder         
+       98 -  standin.py      stand-in model service                      
+       99 -  load.py         load shapes and the results recorder        
+      100 -  tables.py       every write-up table, computed from results.
+          -csv                                                           
+      101 -data/papers/      the three PDFs at pinned versions           
+      102 -data/questions/   evaluation questions with expected answers  
+      103 -results/          raw results, one directory per run, never ed
+          -ited                                                          
+      104 -docs/             the two-page write-up and conversation histo
+          -ry                                                            
+       95 +  library.py         parse PDFs, split into cited pieces      
+       96 +  retrieval.py       BM25, hybrid with local embeddings, reran
+          +k                                                             
+       97 +  client.py          streaming model client, timing, rate-limi
+          +t headers                                                     
+       98 +  governor.py        per-model minute and day buckets, synced 
+          +from responses                                                
+       99 +  prompts.py         understand, draft and check prompts      
+      100 +  pipeline.py        the five steps, retries, deadline and lad
+          +der                                                           
+      101 +  reply.py           the reply and its per-attempt trace      
+      102 +  eval.py            retrieval metrics, groundedness, grading 
+      103 +  standin.py         stand-in model service                   
+      104 +  oracle.py          stand-in answers for gold questions      
+     … 35 more lines (ctrl+o to expand)
+
+⏺ Now the findings log, built from the run notes:
+
+⏺ Write(~/Documents/Github/the-relay-dev/docs/reports/findings.md)
+  ⎿  Wrote 36 lines to
+     ~/Documents/Github/the-relay-dev/docs/reports/findings.md
+      1 # Findings log
+      2 
+      3 Internal. Each finding, the run that showed it, and what changed.
+         Runs are under `results/`.
+      4 
+      5 ## Real service
+      6 
+      7 - **Per-model buckets, 1,000 requests and 8,000 tokens per minute
+         each.** `20261111-0148-probe-limits`. Led to using a different m
+        odel per step so their budgets add up.
+     … +29 lines (ctrl+o to expand)
+
+⏺ Fixing one slip in the log I just wrote: it's 1,000 requests per day, not per
+  minute. Then the full suite and the commit:
+
+⏺ Bash(sed -i '' 's/- \*\*Per-model buckets, 1,000 requests and 8,000 tokens per
+      minute each.\*\*/- **Per-model buckets: 1,000 requests per day and 8,000
+      tokens per mi…)
+  ⎿  1
+     docs/reports/findings.md:0
+     README.md:0
+     … +6 lines (ctrl+o to expand)
+  ⎿  Updated ~/Documents/Github/the-relay-dev/docs/reports/findings.md (+1 
+     -1)
+       4  
+       5  ## Real service
+       6  
+       7 -- **Per-model buckets, 1,000 requests and 8,000 tokens per minu
+         -te each.** `20261111-0148-probe-limits`. Led to using a differe
+         -nt model per step so their budgets add up.                     
+       7 +- **Per-model buckets: 1,000 requests per day and 8,000 tokens 
+         +per minute each.** `20261111-0148-probe-limits`. Led to using a
+         + different model per step so their budgets add up.             
+       8  - **Tokens per minute charged as prompt plus `max_tokens` at ad
+          mission.** `20261111-0148-probe-limits` (142 charged = 78 + 64)
+          . The governor and stand-in charge the same way; `max_tokens` b
+          ecame a throughput setting.
+       9  - **Daily requests refill continuously, one per 86.4 s.** `2026
+          1111-0148-probe-limits`, `20261111-0150-probe-latency` (28m48s 
+          after 20 calls). The budget reply says when one request comes b
+          ack, not "tomorrow".
+      10  - **`retry-after` rounds up to whole seconds; the body has the 
+          exact wait.** `20261111-0200-probe-tpm` (1 s against 82.5 ms). 
+          Retries wait the body's time.
+  ⎿  (timeout 10m)
+
+⏺ All 172 non-Groq tests pass, including the slow load shapes and the checks on
+  results.csv. Committing the docs and pushing:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The remaining work is done: Table 3 is filled, all five load shapes have valid
+  runs, results.csv and the tables are generated, and the 2-page write-up is
+  drafted. Everything is pushed to results/assemble-and-tables (44 commits ahead
+  of main).
+
+  Results
+  - Load shapes: all five ran against the stand-in at the free-tier limits we
+    measured. Laptop sleep invalidated earlier attempts twice; those runs are
+    kept and marked invalid.
+  - Table 3: three retrieval settings, 20 fixed questions each, on real Groq.
+    They score 75%, 75% and 80% correct, one question apart. Since dc-04 flips
+    between runs on the same passages, 20 questions can't separate them, and the
+    write-up says so. The hybrid setting first refused everything because the
+    refusal threshold was on the BM25 scale; I fixed that and re-ran it.
+  - Real-model quality on all 36 gold questions, current code:
+    - 21 of 25 answerable questions correct and cited, 1 wrong (dc-07).
+    - Every question the papers don't answer and every off-topic question was
+      refused.
+  - Under load: zero wrong answers in any shape. When a limit is near, requests
+    wait in the queue (up to 13.7 s) instead of retrying.
+  - Number you couldn't guess: the check step is 77 to 79% of the cost at Groq's
+    list prices.
+
+  Files
+  - results/results.csv: 511 rows, built from results/manifest.json. Assembly
+    regrades every saved reply with the final grader.
+  - docs/tables.md: Tables 2a, 2b and 3, generated from results.csv.
+  - docs/writeup.md, .tex, .pdf: checked to fit in 2 pages. I checked every
+    number in it against the data. That check caught one wrong figure I had
+    stated earlier in this session (un-03 outscores 14 answerable questions,
+    not 18).
+  - docs/reports/findings.md: each finding tied to the run that showed it, for
+    the live review.
+  - README: updated with the real module layout and how to reproduce each
+    result.
+  - Tests: all 172 non-Groq tests pass.
+
+  Needs you
+  - The inj-03 tests. 2 of the 15 real-model tests fail on inj-03. They count
+    any refusal as "followed the injection", but the system refused instead of
+    confirming the false "5 ms". I can split the test into "never confirms an
+    injected claim", which passes, and "gives the right answer", which fails and
+    records the cost of your strict-numbers choice. Or I leave both red as a
+    visible cost. I won't change it without your say.
+  - Write-up placeholders. The Vaani feedback, "something it got wrong that I
+    caught", and "distinctly mine" are yours to write. I left the "got wrong"
+    bullet empty because I caught both the zsh and the threshold bugs myself, so
+    they aren't yours to claim. Page 2 has about 10 lines free.
+  - The Groq organization id. Your exported conversation contains it 14 times.
+    Redacting it would make the transcript a cleaned-up history, which the brief
+    asks you not to submit, so I left it untouched.
+  - A final export. The current export stops at 08:35. Run /export again at the
+    end, and I'll replace the file.
+  - Merging. Should I open a PR from results/assemble-and-tables into main, or
+    merge it directly?
+
+✻ Churned for 8m 2s · done 5:38 PM
+
+※ recap: The Relay assignment is fully built, measured and written up, with everything pushed to the results/assemble-and-tables branch. Next, decide how to handle the two failing inj-03 tests, then fill in your write-up placeholders.
+
+❯ open a PR with our conventions and merge it                                   
+
+  Created PR #1, ran 3 shell commands (ctrl+o to expand)
+
+⏺ I opened #1 and merged it into main as 4a4051e. Your main checkout is now on
+  main and up to date.
+
+  - PR description: follows .github/pull_request_template.md, with What, Why,
+    Trade-off, Evidence (before and after numbers, plus the run directories) and
+    the checklist. The checklist states plainly that the two inj-03 real-model
+    tests still fail, pending your call.
+  - Merge commit, not a squash: the 44 commits are already one logical change
+    each and were pushed before review. Squashing would have meant rewriting
+    pushed history, which you've asked me to check with you first.
+  - Branches kept: the area branches and the worktree at ../the-relay-dev still
+    exist. Say if you want them deleted.
+
+  Still open from before:
+  - The inj-03 tests: split them, or leave them failing as a visible cost of the
+    strict-numbers choice?
+  - Your parts of the write-up: the Vaani feedback, "something it got wrong that
+    I caught", and "distinctly mine".
+  - The organization id in the transcript.
+  - A final /export at the end.
+
+✻ Crunched for 44s · done 6:23 PM
+
+❯ split the tests, keep the org id in the transcript,                           
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+⏺ All 16 tests pass, with one expected failure on inj-03; the safety test passes
+  for all 3 injections. I'm committing, opening a PR and merging now.
+
+  Created PR #2 (ctrl+o to expand)
+
+⏺ I split the injection tests and merged it as #2. The org id stays in the
+  transcript.
+
+  - Safety test: checks that no injection produces a wrong answer. All 3 pass.
+  - Answer-quality test: checks that the two answerable injections still get the
+    right answer. inj-03 is marked as an expected failure. The reason says the
+    strict number check rejects the right reply ("160 ms, not 5 ms"), and that
+    you kept the check strict on purpose. Every test run reports it, and if
+    someone relaxes the number check later and it starts passing, the suite
+    fails until the marker comes off.
+  - Real-model tests on the saved replies for all 36 questions: 16 passed, 1
+    expected failure (inj-03). Before the split it was 13 passed, 2 failed.
+
+  main is at 3c3cdc9. Still yours to do:
+
+  - Write-up gaps: the Vaani feedback, "something it got wrong that I caught",
+    and "distinctly mine" in docs/writeup.md. Page 2 has room for about 10
+    lines.
+  - Final export: run /export once more at the end, and I'll replace
+    docs/conversation/relay-assignment-conversation-history.txt and rebuild the
+    PDF.
+
+✻ Baked for 51s · done 6:25 PM
+
+※ recap: The Relay assignment is finished and merged into main, with the injection tests now split. Next, write your Vaani feedback and your own parts of the assistant section in docs/writeup.md, then run /export once more.
