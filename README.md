@@ -79,29 +79,41 @@ Nothing reaches the person until the draft has passed the check. The draft is ge
 
 When the governor says a step cannot be afforded in time, the pipeline steps down instead of queueing until the person gives up:
 
-1. **Full:** large model drafts, small model checks.
-2. **Lean:** fewer passages, small model drafts, deterministic citation check only.
+1. **Full:** gpt-oss-120b drafts; the deterministic grounding check and qwen3.8-27b both check.
+2. **Lean:** gpt-oss-20b drafts from three passages; both checks still apply.
 3. **Extractive:** no model call; return the best matching passages verbatim with their citations and say that a written answer is unavailable right now.
 4. **Honest no:** budget is gone; say so, say when it resets, and do not guess.
 
 A wrong answer is never on the ladder. Losing speed or fluency is acceptable; losing correctness is not.
 
+Models (chosen from `results/20261111-0150-probe-latency`): gpt-oss-20b understands, gpt-oss-120b drafts, qwen3.8-27b checks. Settings live in `src/relay/config.py`.
+
 ### Repository layout
 
 ```
 src/relay/
-  library.py      parse PDFs, split into cited pieces
-  retrieval.py    BM25, hybrid with local embeddings, rerank
-  client.py       streaming model client, timeouts, retries
-  governor.py     rate and budget buckets, header sync
-  pipeline.py     the five steps, branches and ladder
-  standin.py      stand-in model service
-  load.py         load shapes and the results recorder
-  tables.py       every write-up table, computed from results.csv
-data/papers/      the three PDFs at pinned versions
-data/questions/   evaluation questions with expected answers
-results/          raw results, one directory per run, never edited
-docs/             the two-page write-up and conversation history
+  library.py         parse PDFs, split into cited pieces
+  retrieval.py       BM25, hybrid with local embeddings, rerank
+  client.py          streaming model client, timing, rate-limit headers
+  governor.py        per-model minute and day buckets, synced from responses
+  prompts.py         understand, draft and check prompts
+  pipeline.py        the five steps, retries, deadline and ladder
+  reply.py           the reply and its per-attempt trace
+  eval.py            retrieval metrics, groundedness, grading
+  standin.py         stand-in model service
+  oracle.py          stand-in answers for gold questions
+  probe.py           real-service probes (limits, latency, rpm, tpm)
+  route_eval.py      scores the understand step alone
+  retrieval_bench.py offline retrieval quality and latency
+  evaluate.py        paced real runs over the gold set
+  load.py            load shapes against the stand-in
+  records.py         results rows and per-request cost
+  assemble.py        builds results/results.csv from results/manifest.json
+  tables.py          renders the brief's tables to docs/tables.md
+data/papers/         the three PDFs at pinned versions
+data/questions/      gold questions with evidence and expected facts
+results/             one directory per run with NOTES.md, never edited
+docs/                write-up (md, tex, pdf), tables, reports, conversation
 tests/
 ```
 
@@ -120,6 +132,20 @@ The tests were written before the code and define each layer's contract. Thresho
 uv run pytest                 # everything except Groq calls
 uv run pytest -m real         # spends the Groq daily budget
 RELAY_EVAL_REPLIES=results/<run>/replies.jsonl uv run pytest -m real   # regrade saved replies for free
+```
+
+## Results
+
+- **Write-up:** [`docs/writeup.md`](docs/writeup.md), also as [`docs/writeup.pdf`](docs/writeup.pdf) and a self-contained [`docs/writeup.tex`](docs/writeup.tex).
+- **Tables:** [`docs/tables.md`](docs/tables.md), generated from [`results/results.csv`](results/results.csv).
+- **Raw runs:** every directory under `results/` has its raw rows, full replies with step traces, `run.json` and a `NOTES.md`. [`results/manifest.json`](results/manifest.json) lists the runs that count; invalid runs stay and say why.
+- **Findings log:** [`docs/reports/findings.md`](docs/reports/findings.md).
+
+```sh
+uv run python -m relay.probe limits|latency|rpm|tpm   # real service, spends budget
+uv run python -m relay.evaluate --setting 300w-k5-bm25 --ids att-01 mos-02
+uv run python -m relay.load steady                     # 30 min against the stand-in
+uv run python -m relay.assemble && uv run python -m relay.tables
 ```
 
 ## Setup

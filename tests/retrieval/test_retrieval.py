@@ -5,7 +5,7 @@ import pytest
 import thresholds
 from gold import QUESTIONS, expects_answer
 from relay.eval import percentile, precision_at_k, recall_at_k, reciprocal_rank
-from relay.retrieval import DEFAULT_SETTING, SETTINGS, Retriever
+from relay.retrieval import DEFAULT_SETTING, SETTINGS, Retriever, interleave
 
 ANSWERABLE = [q for q in QUESTIONS if expects_answer(q)]
 
@@ -91,3 +91,25 @@ def test_search_latency_p95_is_within_budget(retriever):
         retriever.search(q["question"])
         timings.append((time.perf_counter() - start) * 1000)
     assert percentile(timings, 95) <= thresholds.RETRIEVAL_MAX_SEARCH_P95_MS
+
+
+def test_interleave_takes_the_best_of_each_list_first():
+    assert interleave(["a1", "a2", "a3"], ["b1", "b2"], ["c1"]) == [
+        "a1",
+        "b1",
+        "c1",
+        "a2",
+        "b2",
+        "a3",
+    ]
+
+
+def test_interleave_drops_repeats():
+    assert interleave(["a", "b"], ["a", "c"]) == ["a", "b", "c"]
+
+
+def test_lexical_top_score_does_not_depend_on_the_ranking_method():
+    query = "how are chunk boundaries predicted"
+    bm25 = Retriever(SETTINGS["300w-k5-bm25"])
+    hybrid = Retriever(SETTINGS["300w-k5-hybrid"])
+    assert hybrid.lexical_top_score(query) == pytest.approx(bm25.search(query)[0].score)

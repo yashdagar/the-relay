@@ -1,7 +1,13 @@
 import pandas as pd
 import pytest
 
-from relay.tables import RESULT_COLUMNS, latency_table, outcomes_table, retrieval_table
+from relay.tables import (
+    RESULT_COLUMNS,
+    latency_table,
+    outcomes_table,
+    render_markdown,
+    retrieval_table,
+)
 
 
 def row(i, scenario="burst", source="stand-in", **overrides):
@@ -19,6 +25,8 @@ def row(i, scenario="burst", source="stand-in", **overrides):
         "retrieval_setting": "300w-k5-hybrid",
         "answer_grade": "correct",
         "queue_depth": i,
+        "reason": "",
+        "usd": 0.0007,
     }
     return {**base, **overrides}
 
@@ -64,7 +72,7 @@ def test_offered_rate_is_requests_per_minute_over_the_arrival_window(results):
 
 
 def test_outcome_percentages_have_one_decimal(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[
         ("burst", "stand-in"), ["succeeded_pct", "rate_limited_pct", "timed_out_pct"]
     ].tolist() == [
@@ -75,22 +83,23 @@ def test_outcome_percentages_have_one_decimal(results):
 
 
 def test_retries_per_request_averages_over_all_requests(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "retries_per_request"] == pytest.approx(0.75)
 
 
 def test_peak_queue_length_is_the_largest_queue_depth_seen(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "peak_queue_length"] == 3
 
 
 def test_tokens_per_answer_counts_only_successful_requests(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.0, usd_per_mtok_out=0.0)
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "tokens_per_answer"] == 1200
 
 
-def test_cost_per_thousand_answers_uses_token_prices(results):
-    outcomes = outcomes_table(results, usd_per_mtok_in=0.5, usd_per_mtok_out=1.0)
+def test_cost_per_thousand_answers_averages_successful_request_cost(results):
+    results.loc[2, "usd"] = 5.0
+    outcomes = outcomes_table(results)
     assert outcomes.loc[("burst", "stand-in"), "usd_per_1000_answers"] == pytest.approx(0.7)
 
 
@@ -111,3 +120,27 @@ def test_retrieval_table_reports_grade_shares_per_setting():
         25.0,
         25.0,
     ]
+
+
+def test_rendered_tables_have_a_row_per_scenario_and_setting():
+    rows = [
+        row(0, scenario="steady"),
+        row(1, scenario="retrieval", source="real", retrieval_setting="300w-k5-bm25"),
+    ]
+    text = render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+    assert "Steady, 2/min" in text and "Paced 3/min" in text and "300 words, 5 pieces" in text
+
+
+def test_unmeasured_percentiles_render_as_not_measured():
+    rows = [row(0, scenario="steady", first_token_ms=None)]
+    assert "not measured" in render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+
+
+def test_real_paced_row_uses_only_the_default_setting_run():
+    rows = [
+        row(0, scenario="retrieval", source="real", retrieval_setting="300w-k5-bm25"),
+        row(1, scenario="retrieval", source="real", retrieval_setting="120w-k8-bm25"),
+    ]
+    text = render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+    paced = next(line for line in text.splitlines() if line.startswith("| Paced"))
+    assert paced.split(" | ")[2] == "1"

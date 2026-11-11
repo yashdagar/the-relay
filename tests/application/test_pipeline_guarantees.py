@@ -1,3 +1,5 @@
+import asyncio
+
 import thresholds
 
 QUESTION = "What value of warmup_steps was used in the Transformer's learning rate schedule?"
@@ -36,10 +38,10 @@ async def test_model_calls_per_request_are_bounded(standin_pipeline):
 
 
 async def test_rate_limited_request_is_retried_and_succeeds(standin_pipeline):
-    pipeline = standin_pipeline(content="grounded", rpm=3, minute_s=2.0)
-    await pipeline.answer(QUESTION)
-    reply = await pipeline.answer(QUESTION)
-    assert reply.status == "ok" and reply.retries >= 1
+    pipeline = standin_pipeline(content="grounded", rpm=1, minute_s=2.0)
+    replies = await asyncio.gather(pipeline.answer(QUESTION), pipeline.answer(QUESTION))
+    assert all(r.status == "ok" for r in replies)
+    assert max(r.retries for r in replies) >= 1
 
 
 async def test_failing_provider_gives_up_after_the_retry_limit(standin_pipeline):
@@ -74,3 +76,24 @@ async def test_exhausted_daily_budget_reply_says_when_service_returns(standin_pi
 async def test_exhausted_daily_budget_reply_is_never_an_unchecked_answer(standin_pipeline):
     reply = await standin_pipeline(content="grounded", rpd=0).answer(QUESTION)
     assert reply.kind in {"degraded", "refusal"}
+
+
+async def test_reply_traces_every_model_call_in_order(standin_pipeline):
+    reply = await standin_pipeline(content="grounded").answer(QUESTION)
+    assert [s["step"] for s in reply.steps] == ["understand", "draft", "check"]
+
+
+async def test_traced_calls_account_for_the_request_time(standin_pipeline):
+    reply = await standin_pipeline(content="grounded").answer(QUESTION)
+    traced = sum(s["queued_ms"] + s["duration_ms"] for s in reply.steps)
+    assert traced <= reply.total_ms and traced >= 0.8 * reply.total_ms
+
+
+async def test_trace_marks_failed_attempts_as_retries(standin_pipeline):
+    reply = await standin_pipeline(content="grounded", fail_rate=1.0).answer(QUESTION)
+    assert [s["outcome"] for s in reply.steps if s["attempt"] > 0] == ["error"] * reply.retries
+
+
+async def test_truncated_draft_is_never_sent(standin_pipeline):
+    reply = await standin_pipeline(content="truncated").answer(QUESTION)
+    assert reply.kind != "answer"

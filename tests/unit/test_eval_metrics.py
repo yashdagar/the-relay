@@ -59,6 +59,16 @@ def test_recall_is_the_share_of_evidence_phrases_found_in_top_k():
     assert recall_at_k([RELEVANT, IRRELEVANT], evidence, k=2) == 0.5
 
 
+def test_any_alternative_phrase_satisfies_an_evidence_item():
+    evidence = [["warmup_steps = 4000", "a 4000 step warmup"]]
+    assert recall_at_k(["followed by a 4000 step warmup"], evidence, k=1) == 1.0
+
+
+def test_alternatives_count_as_one_evidence_item():
+    evidence = [["warmup_steps = 4000", "a 4000 step warmup"], "label smoothing of value"]
+    assert recall_at_k([RELEVANT], evidence, k=1) == 0.5
+
+
 def test_reciprocal_rank_uses_the_first_relevant_piece():
     assert reciprocal_rank([IRRELEVANT, IRRELEVANT, RELEVANT], EVIDENCE) == pytest.approx(1 / 3)
 
@@ -117,3 +127,54 @@ def test_refusing_an_unanswerable_question_is_graded_refused_correctly():
 
 def test_answering_an_unanswerable_question_is_graded_wrong():
     assert grade(UNANSWERABLE, answer("It was 4000.")) == "wrong"
+
+
+def test_citation_ids_in_lenticular_brackets_are_not_counted_as_claims():
+    assert is_grounded(answer("warmup_steps was 4000【1706.03762v7:300:9】."))
+
+
+def test_bare_citation_ids_are_not_counted_as_claims():
+    assert is_grounded(answer("warmup_steps was 4000 (see 1706.03762v7:300:9)."))
+
+
+def test_forbidden_fact_inside_a_citation_id_does_not_count():
+    question = {**QUESTION, "must_not_include": ["\\b9\\b"]}
+    assert grade(question, answer("warmup_steps was 4000 [1706.03762v7:300:9].")) == "correct"
+
+
+def test_narrow_no_break_space_matches_a_plain_space_in_facts():
+    question = {**QUESTION, "must_include": ["4,?000 steps"]}
+    assert grade(question, answer("warmup_steps was 4000 steps.")) == "correct"
+
+
+def test_non_breaking_hyphen_matches_a_plain_hyphen_in_facts():
+    passage = Chunk(id="p:1", paper="2507.07955v2", section="S", page=1, text="FineWeb-Edu 100B")
+    question = {**QUESTION, "must_include": ["FineWeb-Edu"]}
+    reply = answer("Trained on FineWeb‑Edu.", citations=(passage,), retrieved=(passage,))
+    assert grade(question, reply) == "correct"
+
+
+def test_thin_space_thousands_separator_reads_as_one_number():
+    passage = Chunk(id="p:1", paper="2410.00037v1", section="S", page=1, text="a dimension of 1024")
+    question = {**QUESTION, "must_include": ["1,?024"]}
+    reply = answer("A dimension of 1 024.", citations=(passage,), retrieved=(passage,))
+    assert grade(question, reply) == "correct"
+
+
+def test_digits_inside_names_are_not_counted_as_claims():
+    assert is_grounded(answer("warmup_steps was 4000 with Mamba-2 and GPT-3 style k_{t-1}."))
+
+
+def test_a_year_not_in_the_cited_passage_is_not_grounded():
+    assert not is_grounded(answer("warmup_steps was 4000, as proposed by Chen et al., 2022."))
+
+
+def test_digits_trailing_a_name_are_not_counted_as_claims():
+    assert is_grounded(answer("warmup_steps was 4000 in layer L12."))
+
+
+def test_number_words_match_digit_facts():
+    passage = Chunk(id="p:1", paper="1706.03762v7", section="S", page=1, text="h = 8 heads")
+    question = {**QUESTION, "must_include": ["\\b8\\b"]}
+    reply = answer("It uses eight heads.", citations=(passage,), retrieved=(passage,))
+    assert grade(question, reply) == "correct"

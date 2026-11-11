@@ -1,0 +1,30 @@
+{
+  "started": "2026-11-11T17:25:37",
+  "setting": "300w-k5-bm25",
+  "spacing_s": 20.0,
+  "questions": [
+    "att-06",
+    "att-07",
+    "mos-06",
+    "mos-07",
+    "mos-08",
+    "dc-06",
+    "dc-07",
+    "dc-08",
+    "dc-09",
+    "x-01",
+    "un-02",
+    "un-04",
+    "un-05",
+    "ood-03",
+    "inj-01",
+    "inj-03"
+  ],
+  "models": {
+    "understand": "openai/gpt-oss-20b",
+    "draft": "openai/gpt-oss-120b",
+    "lean_draft": "openai/gpt-oss-20b",
+    "check": "qwen/qwen3.8-27b"
+  },
+  "commit": "cc4643a"
+}

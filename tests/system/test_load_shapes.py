@@ -7,7 +7,7 @@ from gold import QUESTIONS
 from relay.config import Config
 from relay.eval import percentile
 from relay.load import SCENARIOS, run
-from relay.standin import StandInConfig, running
+from relay.standin import running
 from relay.tables import RESULT_COLUMNS
 
 pytestmark = pytest.mark.slow
@@ -21,7 +21,7 @@ SCALED_DURATION_S = 8
 @pytest.fixture(scope="module", params=sorted(REQUIRED))
 def scenario_run(request):
     scenario = SCENARIOS[request.param].scaled(duration_s=SCALED_DURATION_S)
-    with running(StandInConfig(content="grounded", **scenario.standin_overrides)) as base_url:
+    with running(scenario.standin_config()) as base_url:
         config = Config.standin(base_url)
         rows = asyncio.run(run(scenario, config, QUESTIONS))
     return scenario, config, rows
@@ -93,9 +93,19 @@ def test_burst_gives_up_on_few_requests(scenario_run):
     )
 
 
-def test_exhausted_daily_budget_answers_everyone_quickly(scenario_run):
+def test_daily_budget_runs_out_during_the_run(scenario_run):
     scenario, _, rows = scenario_run
     if scenario.name != "daily_exhausted":
         pytest.skip("daily_exhausted only")
-    p99 = percentile([row["total_ms"] for row in rows], 99)
-    assert p99 <= thresholds.SYSTEM_BUDGET_EXHAUSTED_MAX_REPLY_MS
+    assert any(row["status"] == "ok" for row in rows)
+    assert any(row["reason"] == "budget_exhausted" for row in rows)
+
+
+def test_requests_after_the_daily_budget_is_gone_are_answered_quickly(scenario_run):
+    scenario, _, rows = scenario_run
+    if scenario.name != "daily_exhausted":
+        pytest.skip("daily_exhausted only")
+    exhausted = [row for row in rows if row["reason"] == "budget_exhausted"]
+    gone_at = min(row["start_time"] + row["total_ms"] / 1000 for row in exhausted)
+    later = [row["total_ms"] for row in exhausted if row["start_time"] >= gone_at]
+    assert later and percentile(later, 99) <= thresholds.SYSTEM_BUDGET_EXHAUSTED_MAX_REPLY_MS
