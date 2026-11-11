@@ -123,7 +123,10 @@ def test_retrieval_table_reports_grade_shares_per_setting():
 
 
 def test_rendered_tables_have_a_row_per_scenario_and_setting():
-    rows = [row(0, scenario="steady"), row(1, scenario="retrieval", source="real")]
+    rows = [
+        row(0, scenario="steady"),
+        row(1, scenario="retrieval", source="real", retrieval_setting="300w-k5-bm25"),
+    ]
     text = render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
     assert "Steady, 2/min" in text and "Paced 3/min" in text and "300 words, 5 pieces" in text
 
@@ -131,3 +134,13 @@ def test_rendered_tables_have_a_row_per_scenario_and_setting():
 def test_unmeasured_percentiles_render_as_not_measured():
     rows = [row(0, scenario="steady", first_token_ms=None)]
     assert "not measured" in render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+
+
+def test_real_paced_row_uses_only_the_default_setting_run():
+    rows = [
+        row(0, scenario="retrieval", source="real", retrieval_setting="300w-k5-bm25"),
+        row(1, scenario="retrieval", source="real", retrieval_setting="120w-k8-bm25"),
+    ]
+    text = render_markdown(pd.DataFrame(rows, columns=RESULT_COLUMNS))
+    paced = next(line for line in text.splitlines() if line.startswith("| Paced"))
+    assert paced.split(" | ")[2] == "1"

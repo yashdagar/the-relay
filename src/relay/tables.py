@@ -104,7 +104,7 @@ SCENARIO_LABELS = {
     "overload": "Sustained overload, 6/min for 20 min",
     "rpm_halved": "Per-minute limits halved, 2/min",
     "daily_exhausted": "Daily budget exhausted mid-run",
-    "retrieval": "Paced 3/min (Table 3 runs)",
+    "retrieval": "Paced 3/min, default setting (Table 3 run)",
 }
 
 
@@ -131,7 +131,11 @@ def _setting_label(name: str) -> str:
 
 
 def render_markdown(results: pd.DataFrame) -> str:
-    shown = results[results["scenario"].isin(SCENARIO_LABELS)]
+    from relay.retrieval import DEFAULT_SETTING
+
+    paced = results["scenario"] == "retrieval"
+    default = results["retrieval_setting"] == DEFAULT_SETTING.name
+    shown = results[results["scenario"].isin(SCENARIO_LABELS) & (~paced | default)]
     order = {name: i for i, name in enumerate(SCENARIO_LABELS)}
     latency = latency_table(shown).sort_index(key=lambda idx: idx.map(lambda v: order.get(v, v)))
     outcomes = outcomes_table(shown).loc[latency.index]
